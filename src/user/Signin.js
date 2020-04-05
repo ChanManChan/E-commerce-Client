@@ -11,7 +11,7 @@ import {
 import { green } from '@material-ui/core/colors';
 import * as yup from 'yup';
 import { toast } from 'react-toastify';
-import { signin, authenticate } from '../auth';
+import { signin, authenticate, isAuthenticated } from '../auth';
 import { Redirect } from 'react-router-dom';
 
 const useStyles = makeStyles((theme) => ({
@@ -39,11 +39,13 @@ const validationSchema = yup.object({
       'Must Contain 8 Characters, One Uppercase, One Lowercase, One Number and one special case Character'
     ),
 });
+
 const Signin = () => {
   const [values, setValues] = useState({
     buttonText: 'Submit',
     redirectToReferrer: false,
   });
+  const { user } = isAuthenticated();
   const classes = useStyles();
   const { buttonText, redirectToReferrer } = values;
   const CustomField = ({ label, type, placeholder, ...props }) => {
@@ -80,18 +82,23 @@ const Signin = () => {
             toast.error(`${data.error}`, {
               position: toast.POSITION.BOTTOM_LEFT,
             });
+            setValues({ ...values, buttonText: 'Submit' });
+            setSubmitting(false);
           } else {
             authenticate(data, () => {
               toast.success(`Welcome ${data.user.name}`, {
                 position: toast.POSITION.BOTTOM_LEFT,
               });
-              setValues({ ...values, redirectToReferrer: true });
+              setValues({
+                ...values,
+                redirectToReferrer: true,
+                buttonText: 'Submit',
+              });
+              resetForm();
+              setSubmitting(false);
             });
           }
         });
-        setValues({ ...values, buttonText: 'Submit' });
-        resetForm();
-        setSubmitting(false);
       }}
     >
       {({ isSubmitting }) => (
@@ -123,7 +130,11 @@ const Signin = () => {
     </Formik>
   );
   const redirectUser = () => {
-    if (redirectToReferrer) return <Redirect to='/' />;
+    if (redirectToReferrer) {
+      if (user && user.role === 1) return <Redirect to='/admin/dashboard' />;
+      else return <Redirect to='/user/dashboard' />;
+    }
+    if (isAuthenticated()) return <Redirect to='/' />;
   };
   return (
     <Layout
@@ -131,8 +142,8 @@ const Signin = () => {
       description='Signin to Node React E-commerce App'
       className='container col-md-6'
     >
-      {signInForm()}
       {redirectUser()}
+      {signInForm()}
     </Layout>
   );
 };

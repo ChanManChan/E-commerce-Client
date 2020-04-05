@@ -2,6 +2,7 @@ import React, { Fragment } from 'react';
 import { Link, withRouter } from 'react-router-dom';
 import { signout, isAuthenticated } from '../auth';
 import { makeStyles, AppBar, Toolbar, Button } from '@material-ui/core';
+import { toast } from 'react-toastify';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -28,11 +29,33 @@ const Menu = ({ history }) => {
             <Button
               component={Link}
               variant='contained'
+              className={classes.button}
               style={isActive(history, '/')}
               to='/'
             >
               Home
             </Button>
+            {isAuthenticated() && isAuthenticated().user.role === 1 ? (
+              <Button
+                component={Link}
+                variant='contained'
+                style={isActive(history, '/admin/dashboard')}
+                to='/admin/dashboard'
+              >
+                Admin Dashboard
+              </Button>
+            ) : (
+              isAuthenticated() && (
+                <Button
+                  component={Link}
+                  variant='contained'
+                  style={isActive(history, '/user/dashboard')}
+                  to='/user/dashboard'
+                >
+                  Dashboard
+                </Button>
+              )
+            )}
           </div>
           <div>
             {isAuthenticated() ? (
@@ -45,6 +68,9 @@ const Menu = ({ history }) => {
                   onClick={() => {
                     signout(() => {
                       history.push('/');
+                      toast.success('Successfully signed out', {
+                        position: toast.POSITION.BOTTOM_LEFT,
+                      });
                     });
                   }}
                 >

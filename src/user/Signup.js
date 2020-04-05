@@ -87,15 +87,17 @@ const Signup = () => {
             toast.error(`${data.error}`, {
               position: toast.POSITION.BOTTOM_LEFT,
             });
+            setButtonText('Submit');
+            setSubmitting(false);
           } else {
             toast.success('Signup success, signin to continue.', {
               position: toast.POSITION.BOTTOM_LEFT,
             });
+            setButtonText('Submit');
+            resetForm();
+            setSubmitting(false);
           }
         });
-        setButtonText('Submit');
-        resetForm();
-        setSubmitting(false);
       }}
     >
       {({ isSubmitting }) => (
