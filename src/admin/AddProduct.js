@@ -19,6 +19,19 @@ import {
 import { green } from '@material-ui/core/colors';
 import CloudUploadIcon from '@material-ui/icons/CloudUpload';
 import { createProduct } from './apiAdmin';
+import DefaultProduct from '../images/defaultProduct.jpg';
+
+const validateForm = (errors, unknownInput) => {
+  let valid = true;
+  Object.values(errors).forEach(
+    // if we have an error string set valid to false
+    (val) => val.length > 0 && (valid = false)
+  );
+  const { category, shipping, fileSize } = unknownInput;
+  if (category.length === 0 || shipping.length === 0 || fileSize > 100000)
+    valid = false;
+  return valid;
+};
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -75,13 +88,27 @@ const AddProduct = () => {
     photo: '',
     formData: '',
     createdProduct: '',
+    category: '',
+    shipping: '',
+    fileSize: 0,
+    errors: {
+      photo: '',
+      category: '',
+      shipping: '',
+    },
     redirectToProfile: false,
+    fileUrl: null,
   });
   const {
     buttonText,
     categories,
     formData,
+    category,
+    shipping,
+    errors,
+    fileSize,
     createdProduct,
+    fileUrl,
     redirectToProfile,
   } = values;
 
@@ -89,18 +116,17 @@ const AddProduct = () => {
     setValues({ ...values, formData: new FormData() });
   }, []);
 
-  const CustomSelectField = ({ children, label, onChange }) => {
+  const CustomSelectField = ({ value, name, children, label, onChange }) => {
     return (
       <FormControl variant='outlined' className={classes.formControl}>
-        <InputLabel htmlFor='outlined-age-native-simple'>{label}</InputLabel>
+        <InputLabel id='demo-simple-select-outlined-label'>{label}</InputLabel>
         <Select
-          native
-          label={label}
+          labelId='demo-simple-select-outlined-label'
+          id='demo-simple-select-outlined'
+          name={name}
+          value={value}
           onChange={onChange}
-          inputProps={{
-            name: { label },
-            id: 'outlined-age-native-simple',
-          }}
+          label={label}
         >
           {children}
         </Select>
@@ -109,18 +135,30 @@ const AddProduct = () => {
   };
 
   const CustomImageField = ({ onChange, ...props }) => {
-    const [field, meta] = useField(props);
-    const errorText = meta.error && meta.touched ? meta.error : '';
+    const [field] = useField(props);
     return (
       <Fragment>
         <input
           {...field}
           accept='image/*'
+          name='photo'
           className={classes.input}
           id='contained-button-file'
-          multiple
           type='file'
           onChange={onChange}
+        />
+        <img
+          src={fileUrl ? fileUrl : DefaultProduct}
+          style={{
+            width: '10rem',
+            height: '10rem',
+            padding: '.2rem',
+            marginLeft: '.6rem',
+            marginBottom: '.5rem',
+            border: '1px solid #444',
+            objectFit: 'cover',
+            objectPosition: '50% 50%',
+          }}
         />
         <label htmlFor='contained-button-file'>
           <Button
@@ -168,32 +206,100 @@ const AddProduct = () => {
     );
   };
   const setFieldValues = (e) => {
-    console.log(e.target.value);
+    const { name, value } = e.target;
+    switch (name) {
+      case 'category':
+        errors.category = value === '' ? 'Category cannot be null' : '';
+        break;
+      case 'shipping':
+        errors.shipping = value === '' ? 'Shipping cannot be null' : '';
+        break;
+      default:
+        break;
+    }
+    setValues({
+      ...values,
+      [name]: value,
+      errors,
+    });
+    formData.set(name, value);
   };
-
+  const handleImage = (e) => {
+    const fileSize = e.target.files[0].size || 0;
+    errors.photo =
+      fileSize > 100000 ? 'File size should be less than 100KB' : '';
+    setValues({
+      ...values,
+      [e.target.name]: e.target.files[0],
+      fileUrl: URL.createObjectURL(e.target.files[0]),
+      errors,
+      fileSize,
+    });
+    formData.set(e.target.name, e.target.files[0]);
+  };
   const newProductForm = () => (
     <Formik
       initialValues={{
         name: '',
         description: '',
         price: '',
-        category: '',
-        shipping: '',
         quantity: '',
       }}
       validationSchema={validationSchema}
       onSubmit={(data, { setSubmitting, resetForm }) => {
+        const unknownInput = { category, shipping, fileSize };
         setSubmitting(true);
-        setTimeout(() => {
-          console.log('DATA FROM PRODUCT FORM: ', data);
-          resetForm();
+        setValues({ ...values, buttonText: 'Submitting...' });
+        if (validateForm(errors, unknownInput)) {
+          // console.log('DATA FROM ONSUBMIT: ', data);
+          Object.keys(data).forEach((key) => {
+            formData.append(key, data[key]);
+          });
+          // for (var value of formData.values()) {
+          //   console.log('VALUE FROM ITERATOR: ', value);
+          // }
+          createProduct(user._id, token, formData).then((data) => {
+            if (data.err) {
+              setValues({ ...values, buttonText: 'Submit' });
+              toast.error(`${data.err}`, {
+                position: toast.POSITION.BOTTOM_LEFT,
+              });
+            } else {
+              toast.success('Product created', {
+                position: toast.POSITION.BOTTOM_LEFT,
+              });
+              setValues({
+                ...values,
+                buttonText: 'Submit',
+                category: '',
+                shipping: '',
+                fileSize: 0,
+                fileUrl: null,
+                createdProduct: data.name,
+              });
+              resetForm();
+              setSubmitting(false);
+            }
+          });
+        } else {
+          toast.error('Invalid Form', {
+            position: toast.POSITION.BOTTOM_LEFT,
+          });
           setSubmitting(false);
-        }, 2000);
+        }
       }}
     >
       {({ isSubmitting }) => (
         <Form>
-          <Field name='photo' onChange={setFieldValues} as={CustomImageField} />
+          <Field name='photo' onChange={handleImage} as={CustomImageField} />
+          {errors.photo.length > 0 && (
+            <Fragment>
+              <br />
+              <span style={{ marginLeft: '0.6rem' }} className='text-danger'>
+                {errors.photo}
+              </span>
+            </Fragment>
+          )}
           <Field
             name='name'
             type='text'
@@ -217,29 +323,66 @@ const AddProduct = () => {
             label='Price'
             as={CustomField}
           />
-          <Field
-            name='category'
-            label='Category'
-            type='select'
-            onChange={setFieldValues}
-            as={CustomSelectField}
-          >
-            <option aria-label='None' value='' />
-            <option value={'5e8715f4ba723a1417ac5143'}>ReactJS</option>
-            <option value={'5e86dcaf2f7a8d0deab6eed5'}>NodeJS</option>
-            <option value={'5e8715faba723a1417ac5144'}>JavaScript</option>
-          </Field>
-          <Field
-            name='shipping'
-            label='Shipping'
-            type='select'
-            onChange={setFieldValues}
-            as={CustomSelectField}
-          >
-            <option aria-label='None' value='' />
-            <option value={0}>No</option>
-            <option value={1}>Yes</option>
-          </Field>
+          <div className='row'>
+            <div className='col-md-2'>
+              <Field
+                name='category'
+                label='Category'
+                type='select'
+                value={category}
+                onChange={setFieldValues}
+                as={CustomSelectField}
+              >
+                <MenuItem value=''>
+                  <em>None</em>
+                </MenuItem>
+                <MenuItem value={'5e8715f4ba723a1417ac5143'}>ReactJS</MenuItem>
+                <MenuItem value={'5e86dcaf2f7a8d0deab6eed5'}>NodeJS</MenuItem>
+                <MenuItem value={'5e8715faba723a1417ac5144'}>
+                  JavaScript
+                </MenuItem>
+              </Field>
+              {errors.category.length > 0 && (
+                <Fragment>
+                  <br />
+                  <span
+                    style={{ marginLeft: '0.6rem' }}
+                    className='text-danger'
+                  >
+                    {errors.category}
+                  </span>
+                </Fragment>
+              )}
+            </div>
+            <div className='col-md-2'>
+              <Field
+                name='shipping'
+                label='Shipping'
+                type='select'
+                value={shipping}
+                onChange={setFieldValues}
+                as={CustomSelectField}
+              >
+                <MenuItem value=''>
+                  <em>None</em>
+                </MenuItem>
+                <MenuItem value={0}>No</MenuItem>
+                <MenuItem value={1}>Yes</MenuItem>
+              </Field>
+              {errors.shipping.length > 0 && (
+                <Fragment>
+                  <br />
+                  <span
+                    style={{ marginLeft: '0.6rem' }}
+                    className='text-danger'
+                  >
+                    {errors.shipping}
+                  </span>
+                </Fragment>
+              )}
+            </div>
+          </div>
+
           <Field
             name='quantity'
             type='number'
