@@ -18,7 +18,7 @@ import {
 } from '@material-ui/core';
 import { green } from '@material-ui/core/colors';
 import CloudUploadIcon from '@material-ui/icons/CloudUpload';
-import { createProduct } from './apiAdmin';
+import { createProduct, getCategories } from './apiAdmin';
 import DefaultProduct from '../images/defaultProduct.jpg';
 
 const validateForm = (errors, unknownInput) => {
@@ -50,12 +50,16 @@ const useStyles = makeStyles((theme) => ({
   uploadButton: {
     marginLeft: '.6rem',
   },
-  submitButton: {
-    marginRight: '-.6rem',
-  },
   formControl: {
     margin: theme.spacing(1),
     minWidth: 120,
+  },
+  button: {
+    marginRight: '.9rem',
+    '&:hover': {
+      color: '#fff',
+      backgroundColor: '#f57f17',
+    },
   },
 }));
 const theme = createMuiTheme({
@@ -112,8 +116,17 @@ const AddProduct = () => {
     redirectToProfile,
   } = values;
 
+  // Load categories and set form data
+  const init = () => {
+    getCategories().then((data) => {
+      if (data.error)
+        toast.error(`${data.error}`, { position: toast.POSITION.BOTTOM_LEFT });
+      else setValues({ ...values, categories: data, formData: new FormData() });
+    });
+  };
+
   useEffect(() => {
-    setValues({ ...values, formData: new FormData() });
+    init();
   }, []);
 
   const CustomSelectField = ({ value, name, children, label, onChange }) => {
@@ -265,7 +278,7 @@ const AddProduct = () => {
                 position: toast.POSITION.BOTTOM_LEFT,
               });
             } else {
-              toast.success('Product created', {
+              toast.success(`${data.name} product created.`, {
                 position: toast.POSITION.BOTTOM_LEFT,
               });
               setValues({
@@ -285,6 +298,7 @@ const AddProduct = () => {
           toast.error('Invalid Form', {
             position: toast.POSITION.BOTTOM_LEFT,
           });
+          setValues({ ...values, buttonText: 'Submit' });
           setSubmitting(false);
         }
       }}
@@ -336,11 +350,12 @@ const AddProduct = () => {
                 <MenuItem value=''>
                   <em>None</em>
                 </MenuItem>
-                <MenuItem value={'5e8715f4ba723a1417ac5143'}>ReactJS</MenuItem>
-                <MenuItem value={'5e86dcaf2f7a8d0deab6eed5'}>NodeJS</MenuItem>
-                <MenuItem value={'5e8715faba723a1417ac5144'}>
-                  JavaScript
-                </MenuItem>
+                {categories &&
+                  categories.map((c, i) => (
+                    <MenuItem key={i} value={c._id}>
+                      {c.name}
+                    </MenuItem>
+                  ))}
               </Field>
               {errors.category.length > 0 && (
                 <Fragment>
@@ -390,17 +405,34 @@ const AddProduct = () => {
             label='Quantity'
             as={CustomField}
           />
-          <Button
-            disabled={isSubmitting}
-            type='submit'
-            variant='contained'
-            color='primary'
-            size='large'
-            className={classes.submitButton}
-            style={{ float: 'right' }}
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'flex-end',
+              marginRight: '-.6rem',
+            }}
           >
-            {buttonText}
-          </Button>
+            <Button
+              disabled={isSubmitting}
+              variant='contained'
+              color='secondary'
+              className={classes.button}
+              size='large'
+              component={Link}
+              to='/admin/dashboard'
+            >
+              Back to Dashboard
+            </Button>
+            <Button
+              disabled={isSubmitting}
+              type='submit'
+              variant='contained'
+              color='primary'
+              size='large'
+            >
+              {buttonText}
+            </Button>
+          </div>
         </Form>
       )}
     </Formik>
@@ -411,7 +443,7 @@ const AddProduct = () => {
       description={`G'day ${user.name}, add a new Product?`}
     >
       <div className='row'>
-        <div className='col-md-8 offset-md-2'>{newProductForm()}</div>
+        <div className='col-md-8 offset-md-2 mb-5'>{newProductForm()}</div>
       </div>
     </Layout>
   );

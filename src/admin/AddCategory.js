@@ -89,7 +89,6 @@ const AddCategory = () => {
             setSubmitting(false);
           }
         });
-        // const {name}=data;
       }}
     >
       {({ isSubmitting }) => (
@@ -100,7 +99,13 @@ const AddCategory = () => {
             placeholder='Category Name'
             label='Category'
           />
-          <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'flex-end',
+              marginRight: '-.6rem',
+            }}
+          >
             <Button
               disabled={isSubmitting}
               variant='contained'
