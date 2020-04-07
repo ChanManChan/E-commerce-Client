@@ -11,6 +11,7 @@ import {
   ThemeProvider,
   makeStyles,
   createMuiTheme,
+  Grid,
 } from '@material-ui/core';
 import { green } from '@material-ui/core/colors';
 import { createCategory } from './apiAdmin';
@@ -43,7 +44,8 @@ const validationSchema = yup.object({
 const AddCategory = () => {
   const [buttonText, setButtonText] = useState('Submit');
   const classes = useStyles();
-  const CustomField = ({ label, type, placeholder, ...props }) => {
+
+  const CustomField = ({ maxWidth, label, type, placeholder, ...props }) => {
     const [field, meta] = useField(props);
     const errorText = meta.error && meta.touched ? meta.error : '';
     return (
@@ -92,42 +94,44 @@ const AddCategory = () => {
       }}
     >
       {({ isSubmitting }) => (
-        <Form>
-          <CustomField
-            name='name'
-            type='text'
-            placeholder='Category Name'
-            label='Category'
-          />
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'flex-end',
-              marginRight: '-.6rem',
-            }}
-          >
-            <Button
-              disabled={isSubmitting}
-              variant='contained'
-              color='secondary'
-              className={classes.button}
-              size='large'
-              component={Link}
-              to='/admin/dashboard'
+        <Grid item xs style={{ maxWidth: '65rem' }}>
+          <Form style={{ margin: '0 auto' }}>
+            <CustomField
+              name='name'
+              type='text'
+              placeholder='Category Name'
+              label='Category'
+            />
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'flex-end',
+                marginRight: '-.6rem',
+              }}
             >
-              Back to Dashboard
-            </Button>
-            <Button
-              disabled={isSubmitting}
-              type='submit'
-              variant='contained'
-              color='primary'
-              size='large'
-            >
-              {buttonText}
-            </Button>
-          </div>
-        </Form>
+              <Button
+                disabled={isSubmitting}
+                variant='contained'
+                color='secondary'
+                className={classes.button}
+                size='large'
+                component={Link}
+                to='/admin/dashboard'
+              >
+                Back to Dashboard
+              </Button>
+              <Button
+                disabled={isSubmitting}
+                type='submit'
+                variant='contained'
+                color='primary'
+                size='large'
+              >
+                {buttonText}
+              </Button>
+            </div>
+          </Form>
+        </Grid>
       )}
     </Formik>
   );
@@ -135,10 +139,11 @@ const AddCategory = () => {
     <Layout
       title='Add a new Category'
       description={`G'day ${user.name}, add a new category?`}
+      className='container-fluid'
     >
-      <div className='row'>
-        <div className='col-md-8 offset-md-2'>{newCategoryForm()}</div>
-      </div>
+      <Grid container spacing={3} justify='center' style={{ padding: '.5rem' }}>
+        {newCategoryForm()}
+      </Grid>
     </Layout>
   );
 };

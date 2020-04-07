@@ -6,6 +6,8 @@ import SaveIcon from '@material-ui/icons/Save';
 import AddShoppingCartIcon from '@material-ui/icons/AddShoppingCart';
 import Button from '@material-ui/core/Button';
 import { makeStyles } from '@material-ui/core/styles';
+import Grid from '@material-ui/core/Grid';
+
 const useStyles = makeStyles((theme) => ({
   button1: {
     margin: theme.spacing(1),
@@ -29,41 +31,44 @@ const UserDashboard = () => {
   } = isAuthenticated();
 
   const userLinks = () => (
-    <div className='card'>
-      <h4 className='card-header'>User Links</h4>
-      <ul className='list-group'>
-        <li className='list-group-item'>
-          <Button
-            variant='contained'
-            color='secondary'
-            component={Link}
-            to='/cart'
-            size='large'
-            className={classes.button2}
-            startIcon={<AddShoppingCartIcon />}
-          >
-            My Cart
-          </Button>
-        </li>
-        <li className='list-group-item'>
-          <Button
-            variant='contained'
-            color='primary'
-            component={Link}
-            to='/profile/update'
-            size='large'
-            className={classes.button1}
-            startIcon={<SaveIcon />}
-          >
-            Update Profile
-          </Button>
-        </li>
-      </ul>
-    </div>
+    <Grid item xs>
+      <div className='card' style={{ maxWidth: '24rem', margin: '0 auto' }}>
+        <h4 className='card-header'>User Links</h4>
+        <ul className='list-group'>
+          <li className='list-group-item'>
+            <Button
+              variant='contained'
+              color='secondary'
+              component={Link}
+              to='/cart'
+              size='large'
+              className={classes.button2}
+              startIcon={<AddShoppingCartIcon />}
+            >
+              My Cart
+            </Button>
+          </li>
+          <li className='list-group-item'>
+            <Button
+              variant='contained'
+              color='primary'
+              component={Link}
+              to='/profile/update'
+              size='large'
+              className={classes.button1}
+              startIcon={<SaveIcon />}
+            >
+              Update Profile
+            </Button>
+          </li>
+        </ul>
+      </div>
+    </Grid>
   );
 
   const userInfo = () => (
-    <div className='card mb-5'>
+    // <Grid item xs>
+    <div className='card mb-5' style={{ maxWidth: '85rem', margin: '0 auto' }}>
       <h3 className='card-header'>User Information</h3>
       <ul className='list-group'>
         <li className='list-group-item'>{name}</li>
@@ -73,14 +78,17 @@ const UserDashboard = () => {
         </li>
       </ul>
     </div>
+    // </Grid>
   );
   const purchaseHistory = () => (
-    <div className='card mb-5'>
+    // <Grid item xs>
+    <div className='card mb-5' style={{ margin: '0 auto' }}>
       <h3 className='card-header'>Purchase history</h3>
       <ul className='list-group'>
         <li className='list-group-item'>History</li>
       </ul>
     </div>
+    // </Grid>
   );
   return (
     <Layout
@@ -88,13 +96,18 @@ const UserDashboard = () => {
       description={`G'day ${name}`}
       className='container-fluid'
     >
-      <div className='row'>
-        <div className='col-3'>{userLinks()}</div>
-        <div className='col-9'>
+      {/* <div className='row'> */}
+      <Grid container spacing={3} style={{ marginBottom: '5rem' }}>
+        <Grid item xs>
           {userInfo()}
           {purchaseHistory()}
-        </div>
-      </div>
+        </Grid>
+        {userLinks()}
+      </Grid>
+      {/* <div className='col-3'></div> */}
+      {/* <div className='col-9'> */}
+      {/* </div> */}
+      {/* </div> */}
     </Layout>
   );
 };

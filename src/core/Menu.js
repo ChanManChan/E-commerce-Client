@@ -1,7 +1,13 @@
 import React, { Fragment } from 'react';
 import { Link, withRouter } from 'react-router-dom';
 import { signout, isAuthenticated } from '../auth';
-import { makeStyles, AppBar, Toolbar, Button } from '@material-ui/core';
+import {
+  makeStyles,
+  AppBar,
+  Toolbar,
+  Button,
+  useMediaQuery,
+} from '@material-ui/core';
 import { toast } from 'react-toastify';
 
 const useStyles = makeStyles((theme) => ({
@@ -13,24 +19,47 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const isActive = (history, path) => {
+const isActive = (history, path, matches) => {
   if (history.location.pathname === path)
-    return { backgroundColor: '#607d8b', color: '#fff' };
-  else return { backgroundColor: '#f44336', color: '#fff' };
+    return !matches
+      ? { backgroundColor: '#607d8b', color: '#fff' }
+      : {
+          border: '3px solid #444',
+          backgroundColor: '#f4f4f4',
+          color: '#3b5998',
+          margin: '.3rem',
+        };
+  else
+    return !matches
+      ? { backgroundColor: '#f44336', color: '#fff' }
+      : {
+          border: '3px solid #444',
+          color: '#fff',
+          margin: '.3rem',
+        };
 };
 
 const Menu = ({ history }) => {
   const classes = useStyles();
+  const matches = useMediaQuery('(max-width:385px)');
+  const dynamicStyling = () =>
+    matches
+      ? {
+          display: 'flex',
+          flexDirection: 'column',
+          width: '100%',
+        }
+      : { justifyContent: 'space-between' };
   return (
     <div className={classes.root}>
       <AppBar position='static'>
-        <Toolbar style={{ justifyContent: 'space-between' }}>
-          <div>
+        <Toolbar style={dynamicStyling()}>
+          <div style={dynamicStyling()}>
             <Button
               component={Link}
-              variant='contained'
-              className={classes.button}
-              style={isActive(history, '/')}
+              variant={!matches ? 'contained' : 'outlined'}
+              className={!matches ? classes.button : ''}
+              style={isActive(history, '/', matches)}
               to='/'
             >
               Home
@@ -38,8 +67,8 @@ const Menu = ({ history }) => {
             {isAuthenticated() && isAuthenticated().user.role === 1 ? (
               <Button
                 component={Link}
-                variant='contained'
-                style={isActive(history, '/admin/dashboard')}
+                variant={!matches ? 'contained' : 'outlined'}
+                style={isActive(history, '/admin/dashboard', matches)}
                 to='/admin/dashboard'
               >
                 Admin Dashboard
@@ -48,8 +77,8 @@ const Menu = ({ history }) => {
               isAuthenticated() && (
                 <Button
                   component={Link}
-                  variant='contained'
-                  style={isActive(history, '/user/dashboard')}
+                  variant={!matches ? 'contained' : 'outlined'}
+                  style={isActive(history, '/user/dashboard', matches)}
                   to='/user/dashboard'
                 >
                   Dashboard
@@ -57,14 +86,14 @@ const Menu = ({ history }) => {
               )
             )}
           </div>
-          <div>
+          <div style={dynamicStyling()}>
             {isAuthenticated() ? (
               <Fragment>
                 <Button
                   component={Link}
                   to='/'
-                  variant='contained'
-                  style={isActive(history, '/signout')}
+                  variant={!matches ? 'contained' : 'outlined'}
+                  style={isActive(history, '/signout', matches)}
                   onClick={() => {
                     signout(() => {
                       history.push('/');
@@ -82,16 +111,16 @@ const Menu = ({ history }) => {
                 <Button
                   component={Link}
                   to='/signin'
-                  variant='contained'
-                  style={isActive(history, '/signin')}
-                  className={classes.button}
+                  variant={!matches ? 'contained' : 'outlined'}
+                  style={isActive(history, '/signin', matches)}
+                  className={!matches ? classes.button : ''}
                 >
                   Signin
                 </Button>
                 <Button
                   component={Link}
-                  variant='contained'
-                  style={isActive(history, '/signup')}
+                  variant={!matches ? 'contained' : 'outlined'}
+                  style={isActive(history, '/signup', matches)}
                   to='/signup'
                 >
                   Signup

@@ -34,11 +34,7 @@ const Home = () => {
     loadProductsBySell();
   }, []);
   return (
-    <Layout
-      title='Home Page'
-      description='Node React E-commerce App'
-      className='container-fluid'
-    >
+    <Layout title='Home Page' description='Node React E-commerce App'>
       <div style={{ width: '80%', margin: '0 auto 10rem auto' }}>
         <h2 className='mb-4'>New Arrivals</h2>
         <Grid container spacing={3} xs={12}>

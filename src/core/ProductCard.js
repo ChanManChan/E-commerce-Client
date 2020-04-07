@@ -11,15 +11,20 @@ import {
   Typography,
   Grid,
 } from '@material-ui/core';
+import useMediaQuery from '@material-ui/core/useMediaQuery';
 import AddShoppingCartIcon from '@material-ui/icons/AddShoppingCart';
 import VisibilityIcon from '@material-ui/icons/Visibility';
 import DefaultImage from '../images/defaultProduct.jpg';
-import ShowImage from './ShowImage';
 import { API } from '../config';
 
 const useStyles = makeStyles({
   root: {
-    width: 375,
+    width: '24rem',
+    margin: '0 auto 2rem auto',
+  },
+  mediaRoot: {
+    maxWidth: '24rem',
+    margin: '0 auto 2rem auto',
   },
   media: {
     height: 300,
@@ -27,10 +32,20 @@ const useStyles = makeStyles({
     backgroundSize: 'contain',
     backgroundPosition: 'center',
   },
+  button: {
+    margin: '.3rem',
+    padding: '.4rem',
+    width: '100%',
+  },
+  buttonWrapper: {
+    flexDirection: 'column',
+    alignItems: 'center',
+  },
 });
 
 const ProductCard = ({ product }) => {
   const classes = useStyles();
+  const matches = useMediaQuery('(max-width:385px)');
   const [renderActual, setRenderActual] = useState(true);
   useEffect(() => {
     const testImage = (URL) => {
@@ -59,9 +74,10 @@ const ProductCard = ({ product }) => {
   }, []);
 
   const fetchImage = () => `${API}/product/photo/${product._id}`;
+  const swapMedia = () => (matches ? classes.mediaRoot : classes.root);
   return (
     <Grid item xs>
-      <Card className={classes.root}>
+      <Card className={swapMedia()}>
         <CardActionArea>
           <CardMedia
             className={classes.media}
@@ -78,11 +94,12 @@ const ProductCard = ({ product }) => {
             </Typography>
           </CardContent>
         </CardActionArea>
-        <CardActions>
+        <CardActions className={classes.buttonWrapper}>
           <Button
             size='medium'
             color='primary'
-            style={{ margin: '1rem', padding: '.4rem' }}
+            variant='outlined'
+            className={classes.button}
             startIcon={<VisibilityIcon />}
           >
             View Product
@@ -90,7 +107,8 @@ const ProductCard = ({ product }) => {
           <Button
             size='medium'
             color='secondary'
-            style={{ margin: '1rem', padding: '.4rem' }}
+            variant='outlined'
+            className={classes.button}
             startIcon={<AddShoppingCartIcon />}
           >
             Add to cart

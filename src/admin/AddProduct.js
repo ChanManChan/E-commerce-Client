@@ -15,6 +15,7 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  Grid,
 } from '@material-ui/core';
 import { green } from '@material-ui/core/colors';
 import CloudUploadIcon from '@material-ui/icons/CloudUpload';
@@ -304,136 +305,138 @@ const AddProduct = () => {
       }}
     >
       {({ isSubmitting }) => (
-        <Form>
-          <Field name='photo' onChange={handleImage} as={CustomImageField} />
-          {errors.photo.length > 0 && (
-            <Fragment>
-              <br />
-              <span style={{ marginLeft: '0.6rem' }} className='text-danger'>
-                {errors.photo}
-              </span>
-            </Fragment>
-          )}
-          <Field
-            name='name'
-            type='text'
-            placeholder='Enter product name'
-            label='Product'
-            as={CustomField}
-          />
-          <Field
-            name='description'
-            type='text'
-            multiline={true}
-            rows={4}
-            placeholder='Provide product description'
-            label='Description'
-            as={CustomField}
-          />
-          <Field
-            name='price'
-            type='number'
-            placeholder='Enter the price'
-            label='Price'
-            as={CustomField}
-          />
-          <div className='row'>
-            <div className='col-md-2'>
-              <Field
-                name='category'
-                label='Category'
-                type='select'
-                value={category}
-                onChange={setFieldValues}
-                as={CustomSelectField}
-              >
-                <MenuItem value=''>
-                  <em>None</em>
-                </MenuItem>
-                {categories &&
-                  categories.map((c, i) => (
-                    <MenuItem key={i} value={c._id}>
-                      {c.name}
-                    </MenuItem>
-                  ))}
-              </Field>
-              {errors.category.length > 0 && (
-                <Fragment>
-                  <br />
-                  <span
-                    style={{ marginLeft: '0.6rem' }}
-                    className='text-danger'
-                  >
-                    {errors.category}
-                  </span>
-                </Fragment>
-              )}
+        <Grid item xs style={{ maxWidth: '65rem', margin: '0 auto' }}>
+          <Form>
+            <Field name='photo' onChange={handleImage} as={CustomImageField} />
+            {errors.photo.length > 0 && (
+              <Fragment>
+                <br />
+                <span style={{ marginLeft: '0.6rem' }} className='text-danger'>
+                  {errors.photo}
+                </span>
+              </Fragment>
+            )}
+            <Field
+              name='name'
+              type='text'
+              placeholder='Enter product name'
+              label='Product'
+              as={CustomField}
+            />
+            <Field
+              name='description'
+              type='text'
+              multiline={true}
+              rows={4}
+              placeholder='Provide product description'
+              label='Description'
+              as={CustomField}
+            />
+            <Field
+              name='price'
+              type='number'
+              placeholder='Enter the price'
+              label='Price'
+              as={CustomField}
+            />
+            <div className='row'>
+              <div className='col-md-2'>
+                <Field
+                  name='category'
+                  label='Category'
+                  type='select'
+                  value={category}
+                  onChange={setFieldValues}
+                  as={CustomSelectField}
+                >
+                  <MenuItem value=''>
+                    <em>None</em>
+                  </MenuItem>
+                  {categories &&
+                    categories.map((c, i) => (
+                      <MenuItem key={i} value={c._id}>
+                        {c.name}
+                      </MenuItem>
+                    ))}
+                </Field>
+                {errors.category.length > 0 && (
+                  <Fragment>
+                    <br />
+                    <span
+                      style={{ marginLeft: '0.6rem' }}
+                      className='text-danger'
+                    >
+                      {errors.category}
+                    </span>
+                  </Fragment>
+                )}
+              </div>
+              <div className='col-md-2'>
+                <Field
+                  name='shipping'
+                  label='Shipping'
+                  type='select'
+                  value={shipping}
+                  onChange={setFieldValues}
+                  as={CustomSelectField}
+                >
+                  <MenuItem value=''>
+                    <em>None</em>
+                  </MenuItem>
+                  <MenuItem value={0}>No</MenuItem>
+                  <MenuItem value={1}>Yes</MenuItem>
+                </Field>
+                {errors.shipping.length > 0 && (
+                  <Fragment>
+                    <br />
+                    <span
+                      style={{ marginLeft: '0.6rem' }}
+                      className='text-danger'
+                    >
+                      {errors.shipping}
+                    </span>
+                  </Fragment>
+                )}
+              </div>
             </div>
-            <div className='col-md-2'>
-              <Field
-                name='shipping'
-                label='Shipping'
-                type='select'
-                value={shipping}
-                onChange={setFieldValues}
-                as={CustomSelectField}
-              >
-                <MenuItem value=''>
-                  <em>None</em>
-                </MenuItem>
-                <MenuItem value={0}>No</MenuItem>
-                <MenuItem value={1}>Yes</MenuItem>
-              </Field>
-              {errors.shipping.length > 0 && (
-                <Fragment>
-                  <br />
-                  <span
-                    style={{ marginLeft: '0.6rem' }}
-                    className='text-danger'
-                  >
-                    {errors.shipping}
-                  </span>
-                </Fragment>
-              )}
-            </div>
-          </div>
 
-          <Field
-            name='quantity'
-            type='number'
-            placeholder='Enter available stock'
-            label='Quantity'
-            as={CustomField}
-          />
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'flex-end',
-              marginRight: '-.6rem',
-            }}
-          >
-            <Button
-              disabled={isSubmitting}
-              variant='contained'
-              color='secondary'
-              className={classes.button}
-              size='large'
-              component={Link}
-              to='/admin/dashboard'
+            <Field
+              name='quantity'
+              type='number'
+              placeholder='Enter available stock'
+              label='Quantity'
+              as={CustomField}
+            />
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'flex-end',
+                marginRight: '-.6rem',
+              }}
             >
-              Back to Dashboard
-            </Button>
-            <Button
-              disabled={isSubmitting}
-              type='submit'
-              variant='contained'
-              color='primary'
-              size='large'
-            >
-              {buttonText}
-            </Button>
-          </div>
-        </Form>
+              <Button
+                disabled={isSubmitting}
+                variant='contained'
+                color='secondary'
+                className={classes.button}
+                size='large'
+                component={Link}
+                to='/admin/dashboard'
+              >
+                Back to Dashboard
+              </Button>
+              <Button
+                disabled={isSubmitting}
+                type='submit'
+                variant='contained'
+                color='primary'
+                size='large'
+              >
+                {buttonText}
+              </Button>
+            </div>
+          </Form>
+        </Grid>
       )}
     </Formik>
   );
@@ -441,10 +444,16 @@ const AddProduct = () => {
     <Layout
       title='Add a new Product'
       description={`G'day ${user.name}, add a new Product?`}
+      className='container-fluid'
     >
-      <div className='row'>
-        <div className='col-md-8 offset-md-2 mb-5'>{newProductForm()}</div>
-      </div>
+      <Grid
+        container
+        spacing={3}
+        justify='center'
+        style={{ marginBottom: '7rem', padding: '.5rem' }}
+      >
+        {newProductForm()}
+      </Grid>
     </Layout>
   );
 };
