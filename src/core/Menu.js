@@ -64,6 +64,15 @@ const Menu = ({ history }) => {
             >
               Home
             </Button>
+            <Button
+              component={Link}
+              variant={!matches ? 'contained' : 'outlined'}
+              className={!matches ? classes.button : ''}
+              style={isActive(history, '/shop', matches)}
+              to='/shop'
+            >
+              Shop
+            </Button>
             {isAuthenticated() && isAuthenticated().user.role === 1 ? (
               <Button
                 component={Link}
