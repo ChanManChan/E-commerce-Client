@@ -63,13 +63,17 @@ const Shop = () => {
   useEffect(() => {
     if (totalCalls.current < 1) {
       totalCalls.current += 1;
+      console.log('ENTERED THE USE_EFFECT:', totalCalls.current);
       init();
       return;
     } else
-      loadFilteredResults({
-        category: myFilters.filters['checkedCategory'],
-        price: myFilters.filters['priceRange'],
-      });
+      loadFilteredResults(
+        {
+          category: myFilters.filters['checkedCategory'],
+          price: myFilters.filters['priceRange'],
+        },
+        myFilters.filters['priceId']
+      );
   }, [myFilters]);
 
   const handleFilters = (filters, filterBy) => {
@@ -86,13 +90,25 @@ const Shop = () => {
     return array;
   };
 
-  const loadFilteredResults = (selectedFilters) => {
+  const loadFilteredResults = (selectedFilters, priceId) => {
     console.log('CHECKING SELECTED FILTERS: ', selectedFilters);
-    getFilteredProducts(skip, limit, selectedFilters).then((data) => {
-      if (data.error)
-        toast.error(`${data.error}`, { position: toast.POSITION.BOTTOM_LEFT });
-      else setFilteredResults(data);
-    });
+    if (
+      selectedFilters.category.length === 0 &&
+      selectedFilters.price.length === 0 &&
+      parseInt(priceId) !== 0
+    ) {
+      toast.error('Select at least one filter parameter', {
+        position: toast.POSITION.BOTTOM_LEFT,
+      });
+      setFilteredResults(0);
+    } else
+      getFilteredProducts(skip, limit, selectedFilters).then((data) => {
+        if (data.error)
+          toast.error(`${data.error}`, {
+            position: toast.POSITION.BOTTOM_LEFT,
+          });
+        else setFilteredResults(data);
+      });
   };
   return (
     <Layout
@@ -185,9 +201,7 @@ const Shop = () => {
               </Collapse>
             </List>
           </div>
-          <div className='col-8'>
-            {JSON.stringify(filteredResults, null, 2)}
-          </div>
+          <div className='col-8'>{JSON.stringify(filteredResults)}</div>
         </div>
       </div>
     </Layout>

@@ -35,6 +35,7 @@ const CategoryCheckbox = ({ categories, handleFilters }) => {
       <FormControlLabel
         control={
           <CustomCheckbox
+            checked={checked.indexOf(c._id) !== -1}
             onChange={handleToggle}
             name={`checkedCategory${i}`}
           />
