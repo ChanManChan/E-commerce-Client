@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Layout from './Layout';
 import ProductCard from './ProductCard';
-import { getCategories } from './apiCore';
+import { getCategories, getFilteredProducts } from './apiCore';
 import { toast } from 'react-toastify';
 import CategoryCheckbox from './CategoryCheckbox';
 import PriceRangeRadioBox from './PriceRangeRadioBox';
 import { prices } from './fixedPrices';
-import { RadioGroup, FormControl } from '@material-ui/core';
+import { RadioGroup, FormControl, FormGroup } from '@material-ui/core';
 import Collapse from '@material-ui/core/Collapse';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
@@ -28,10 +28,13 @@ const useStyles = makeStyles((theme) => ({
   nested: {
     paddingLeft: theme.spacing(4),
   },
+  formControl: {
+    margin: theme.spacing(3),
+  },
 }));
-
 const Shop = () => {
   const classes = useStyles();
+  const totalCalls = useRef(0);
   const [open, setOpen] = useState(true);
   const [exposed, setExposed] = useState(true);
   const handleClick = () => {
@@ -42,6 +45,9 @@ const Shop = () => {
   };
 
   const [categories, setCategories] = useState([]);
+  const [limit, setLimit] = useState(6);
+  const [skip, setSkip] = useState(0);
+  const [filteredResults, setFilteredResults] = useState(0);
   const [myFilters, setMyFilters] = useState({
     filters: { checkedCategory: [], priceRange: [], priceId: '' },
   });
@@ -49,12 +55,22 @@ const Shop = () => {
     getCategories().then((data) => {
       if (data.error)
         toast.error(`${data.error}`, { position: toast.POSITION.BOTTOM_LEFT });
-      else setCategories(data);
+      else {
+        setCategories(data);
+      }
     });
   };
   useEffect(() => {
-    init();
-  }, []);
+    if (totalCalls.current < 1) {
+      totalCalls.current += 1;
+      init();
+      return;
+    } else
+      loadFilteredResults({
+        category: myFilters.filters['checkedCategory'],
+        price: myFilters.filters['priceRange'],
+      });
+  }, [myFilters]);
 
   const handleFilters = (filters, filterBy) => {
     const newFilters = { ...myFilters };
@@ -70,6 +86,14 @@ const Shop = () => {
     return array;
   };
 
+  const loadFilteredResults = (selectedFilters) => {
+    console.log('CHECKING SELECTED FILTERS: ', selectedFilters);
+    getFilteredProducts(skip, limit, selectedFilters).then((data) => {
+      if (data.error)
+        toast.error(`${data.error}`, { position: toast.POSITION.BOTTOM_LEFT });
+      else setFilteredResults(data);
+    });
+  };
   return (
     <Layout
       title='Shop Page'
@@ -97,32 +121,27 @@ const Shop = () => {
                 {open ? <ExpandLess /> : <ExpandMore />}
               </ListItem>
               <Collapse in={open} timeout='auto' unmountOnExit>
-                <List component='ul' disablePadding>
+                <List component='div' disablePadding>
                   <ListItem button className={classes.nested}>
-                    <ul>
-                      <CategoryCheckbox
-                        categories={categories}
-                        handleFilters={(filters, filterBy) =>
-                          handleFilters(filters, filterBy)
-                        }
-                      />
-                    </ul>
+                    <div style={{ marginLeft: '1rem' }}>
+                      <FormControl
+                        component='fieldset'
+                        className={classes.formControl}
+                      >
+                        <FormGroup>
+                          <CategoryCheckbox
+                            categories={categories}
+                            handleFilters={(filters, filterBy) =>
+                              handleFilters(filters, filterBy)
+                            }
+                          />
+                        </FormGroup>
+                      </FormControl>
+                    </div>
                   </ListItem>
                 </List>
               </Collapse>
             </List>
-
-            {/* <h4>Filter by categories</h4> */}
-            {/* <ul>
-            <CategoryCheckbox
-              categories={categories}
-              handleFilters={(filters, filterBy) =>
-                handleFilters(filters, filterBy)
-              }
-            />
-          </ul> */}
-            {/* <h4>Filter by price range</h4> */}
-
             <List
               component='nav'
               aria-labelledby='nested-list-subheader'
@@ -143,7 +162,7 @@ const Shop = () => {
               <Collapse in={exposed} timeout='auto' unmountOnExit>
                 <List component='div' disablePadding>
                   <ListItem button className={classes.nested}>
-                    <div>
+                    <div style={{ marginLeft: '1rem' }}>
                       <FormControl component='fieldset'>
                         <RadioGroup
                           aria-label='priceRange'
@@ -166,7 +185,9 @@ const Shop = () => {
               </Collapse>
             </List>
           </div>
-          <div className='col-8'>{JSON.stringify(myFilters, null, 2)}</div>
+          <div className='col-8'>
+            {JSON.stringify(filteredResults, null, 2)}
+          </div>
         </div>
       </div>
     </Layout>

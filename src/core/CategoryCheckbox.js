@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Checkbox from '@material-ui/core/Checkbox';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import { withStyles } from '@material-ui/core';
@@ -16,32 +16,32 @@ const CustomCheckbox = withStyles({
 
 const CategoryCheckbox = ({ categories, handleFilters }) => {
   const [checked, setChecked] = useState([]);
-
-  const handleToggle = (c) => (e) => {
+  const handleToggle = (e) => {
     // returns the first index or '-1'
-    const currentCategoryId = checked.indexOf(c);
-    const newCheckedCategoryId = [...checked];
+    const currentCategory = categories[parseInt(e.target.name.substring(15))];
+    const currentCategoryIdPosition = checked.indexOf(currentCategory._id);
+    const newCheckedCategoryIdArray = [...checked];
     // if currently checked was not already in the checked state > push
     // else pull/take off
-    if (currentCategoryId === -1) newCheckedCategoryId.push(c);
-    else newCheckedCategoryId.splice(currentCategoryId, 1);
-    // console.log('FROM CHECKBOX: ', newCheckedCategoryId);
-    setChecked(newCheckedCategoryId);
-    handleFilters(newCheckedCategoryId, e.target.name);
+    if (currentCategoryIdPosition === -1)
+      newCheckedCategoryIdArray.push(currentCategory._id);
+    else newCheckedCategoryIdArray.splice(currentCategoryIdPosition, 1);
+    setChecked(newCheckedCategoryIdArray);
+    handleFilters(newCheckedCategoryIdArray, e.target.name.substring(0, 15));
   };
 
   return categories.map((c, i) => (
-    <li key={i} className='list-unstyled'>
+    <div key={i}>
       <FormControlLabel
         control={
           <CustomCheckbox
-            onChange={handleToggle(c._id)}
-            name='checkedCategory'
+            onChange={handleToggle}
+            name={`checkedCategory${i}`}
           />
         }
         label={c.name}
       />
-    </li>
+    </div>
   ));
 };
 
