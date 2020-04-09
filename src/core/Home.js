@@ -4,10 +4,18 @@ import { getProducts } from './apiCore';
 import { toast } from 'react-toastify';
 import ProductCard from './ProductCard';
 import { Grid, makeStyles } from '@material-ui/core';
+import Search from './Search';
 
 const useStyles = makeStyles((theme) => ({
   root: {
     flexGrow: 1,
+  },
+  typographyRoot: {
+    ...theme.typography.button,
+    backgroundColor: theme.palette.background.paper,
+    padding: theme.spacing(1),
+    fontSize: '2rem',
+    margin: '1rem 0 1rem 0',
   },
 }));
 
@@ -36,13 +44,14 @@ const Home = () => {
   return (
     <Layout title='Home Page' description='Node React E-commerce App'>
       <div style={{ width: '80%', margin: '0 auto 10rem auto' }}>
-        <h2 className='mb-4'>New Arrivals</h2>
+        <Search />
+        <div className={classes.typographyRoot}>{'New Arrivals'}</div>
         <Grid container spacing={3} xs={12}>
           {productsByArrival.map((product, i) => (
             <ProductCard key={i} product={product} />
           ))}
         </Grid>
-        <h2 className='mb-4'>Best Sellers</h2>
+        <div className={classes.typographyRoot}>{'Best Sellers'}</div>
         <Grid container spacing={3} xs={12}>
           {productsBySell.map((product, i) => (
             <ProductCard key={i} product={product} />

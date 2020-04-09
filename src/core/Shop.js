@@ -19,6 +19,7 @@ import ExpandMore from '@material-ui/icons/ExpandMore';
 import CategoryIcon from '@material-ui/icons/Category';
 import CreditCardIcon from '@material-ui/icons/CreditCard';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
+import Button from '@material-ui/core/Button';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -64,6 +65,7 @@ const Shop = () => {
   const [categories, setCategories] = useState([]);
   const [limit, setLimit] = useState(6);
   const [skip, setSkip] = useState(0);
+  const [size, setSize] = useState(0);
   const [filteredResults, setFilteredResults] = useState([]);
   const [myFilters, setMyFilters] = useState({
     filters: { checkedCategory: [], priceRange: [], priceId: '' },
@@ -124,9 +126,30 @@ const Shop = () => {
           toast.error(`${data.error}`, {
             position: toast.POSITION.BOTTOM_LEFT,
           });
-        else setFilteredResults(data.data);
+        else {
+          setFilteredResults(data.data);
+          setSize(data.size);
+          setSkip(0);
+        }
       });
   };
+
+  const loadMore = () => {
+    let toSkip = skip + limit;
+    getFilteredProducts(toSkip, limit, {
+      category: myFilters.filters['checkedCategory'],
+      price: myFilters.filters['priceRange'],
+    }).then((data) => {
+      if (data.error)
+        toast.error(`${data.error}`, { position: toast.POSITION.BOTTOM_LEFT });
+      else {
+        setFilteredResults([...filteredResults, ...data.data]);
+        setSize(data.size);
+        setSkip(toSkip);
+      }
+    });
+  };
+
   const dynamicStylingSidebar = () =>
     breakPoint_524px
       ? { minWidth: '100vw', margin: '0 auto', flexDirection: 'column' }
@@ -140,7 +163,22 @@ const Shop = () => {
       ? { minWidth: '100vw' }
       : { minWidth: '70vw' };
 
-  // minWidth: '100vw', flexDirection: 'column'
+  const loadMoreButton = () => {
+    return (
+      size > 0 &&
+      size >= limit && (
+        <Button
+          onClick={loadMore}
+          size='large'
+          variant='outlined'
+          color='secondary'
+        >
+          Load More
+        </Button>
+      )
+    );
+  };
+
   const sidebar = () => (
     <Grid container spacing={3} xs={4} style={dynamicStylingSidebar()}>
       <Grid item xs>
@@ -238,6 +276,8 @@ const Shop = () => {
           <ProductCard key={index} product={product} />
         ))}
       </Grid>
+      <hr />
+      {loadMoreButton()}
     </Fragment>
   );
   return (
