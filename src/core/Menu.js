@@ -19,9 +19,9 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const isActive = (history, path, matches) => {
+const isActive = (history, path, breakPoint_480px) => {
   if (history.location.pathname === path)
-    return !matches
+    return !breakPoint_480px
       ? { backgroundColor: '#607d8b', color: '#fff' }
       : {
           border: '3px solid #444',
@@ -30,7 +30,7 @@ const isActive = (history, path, matches) => {
           margin: '.3rem',
         };
   else
-    return !matches
+    return !breakPoint_480px
       ? { backgroundColor: '#f44336', color: '#fff' }
       : {
           border: '3px solid #444',
@@ -41,9 +41,9 @@ const isActive = (history, path, matches) => {
 
 const Menu = ({ history }) => {
   const classes = useStyles();
-  const matches = useMediaQuery('(max-width:385px)');
+  const breakPoint_480px = useMediaQuery('(max-width:480px)');
   const dynamicStyling = () =>
-    matches
+    breakPoint_480px
       ? {
           display: 'flex',
           flexDirection: 'column',
@@ -57,18 +57,18 @@ const Menu = ({ history }) => {
           <div style={dynamicStyling()}>
             <Button
               component={Link}
-              variant={!matches ? 'contained' : 'outlined'}
-              className={!matches ? classes.button : ''}
-              style={isActive(history, '/', matches)}
+              variant={!breakPoint_480px ? 'contained' : 'outlined'}
+              className={!breakPoint_480px ? classes.button : ''}
+              style={isActive(history, '/', breakPoint_480px)}
               to='/'
             >
               Home
             </Button>
             <Button
               component={Link}
-              variant={!matches ? 'contained' : 'outlined'}
-              className={!matches ? classes.button : ''}
-              style={isActive(history, '/shop', matches)}
+              variant={!breakPoint_480px ? 'contained' : 'outlined'}
+              className={!breakPoint_480px ? classes.button : ''}
+              style={isActive(history, '/shop', breakPoint_480px)}
               to='/shop'
             >
               Shop
@@ -76,8 +76,8 @@ const Menu = ({ history }) => {
             {isAuthenticated() && isAuthenticated().user.role === 1 ? (
               <Button
                 component={Link}
-                variant={!matches ? 'contained' : 'outlined'}
-                style={isActive(history, '/admin/dashboard', matches)}
+                variant={!breakPoint_480px ? 'contained' : 'outlined'}
+                style={isActive(history, '/admin/dashboard', breakPoint_480px)}
                 to='/admin/dashboard'
               >
                 Admin Dashboard
@@ -86,8 +86,8 @@ const Menu = ({ history }) => {
               isAuthenticated() && (
                 <Button
                   component={Link}
-                  variant={!matches ? 'contained' : 'outlined'}
-                  style={isActive(history, '/user/dashboard', matches)}
+                  variant={!breakPoint_480px ? 'contained' : 'outlined'}
+                  style={isActive(history, '/user/dashboard', breakPoint_480px)}
                   to='/user/dashboard'
                 >
                   Dashboard
@@ -101,8 +101,8 @@ const Menu = ({ history }) => {
                 <Button
                   component={Link}
                   to='/'
-                  variant={!matches ? 'contained' : 'outlined'}
-                  style={isActive(history, '/signout', matches)}
+                  variant={!breakPoint_480px ? 'contained' : 'outlined'}
+                  style={isActive(history, '/signout', breakPoint_480px)}
                   onClick={() => {
                     signout(() => {
                       history.push('/');
@@ -120,16 +120,16 @@ const Menu = ({ history }) => {
                 <Button
                   component={Link}
                   to='/signin'
-                  variant={!matches ? 'contained' : 'outlined'}
-                  style={isActive(history, '/signin', matches)}
-                  className={!matches ? classes.button : ''}
+                  variant={!breakPoint_480px ? 'contained' : 'outlined'}
+                  style={isActive(history, '/signin', breakPoint_480px)}
+                  className={!breakPoint_480px ? classes.button : ''}
                 >
                   Signin
                 </Button>
                 <Button
                   component={Link}
-                  variant={!matches ? 'contained' : 'outlined'}
-                  style={isActive(history, '/signup', matches)}
+                  variant={!breakPoint_480px ? 'contained' : 'outlined'}
+                  style={isActive(history, '/signup', breakPoint_480px)}
                   to='/signup'
                 >
                   Signup

@@ -45,7 +45,7 @@ const useStyles = makeStyles({
 
 const ProductCard = ({ product }) => {
   const classes = useStyles();
-  const matches = useMediaQuery('(max-width:385px)');
+  const breakPoint_385px = useMediaQuery('(max-width:385px)');
   const [renderActual, setRenderActual] = useState(true);
   useEffect(() => {
     const testImage = (URL) => {
@@ -74,7 +74,7 @@ const ProductCard = ({ product }) => {
   }, []);
 
   const fetchImage = () => `${API}/product/photo/${product._id}`;
-  const swapMedia = () => (matches ? classes.mediaRoot : classes.root);
+  const swapMedia = () => (breakPoint_385px ? classes.mediaRoot : classes.root);
   return (
     <Grid item xs>
       <Card className={swapMedia()}>
