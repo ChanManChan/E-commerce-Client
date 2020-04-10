@@ -1,11 +1,18 @@
 import React, { useState, useEffect, Fragment } from 'react';
 import { FormControl, FormGroup, makeStyles } from '@material-ui/core';
+import CategoryIcon from '@material-ui/icons/Category';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Checkbox from '@material-ui/core/Checkbox';
 import { FieldArray } from 'formik';
 import GenericList from './GenericList';
 
 const useStyles = makeStyles((theme) => ({
+  rootSelect: {
+    width: '100%',
+    maxWidth: 360,
+    backgroundColor: theme.palette.primary.main,
+    color: '#fff',
+  },
   formControl: {
     margin: theme.spacing(3),
   },
@@ -48,7 +55,13 @@ const CustomCategoryList = ({
   const fieldName = 'category';
   return (
     checked && (
-      <GenericList>
+      <GenericList
+        customClassName={classes.rootSelect}
+        customIcon={<CategoryIcon />}
+        customIconColor='#fff'
+        primaryText='Categories'
+        usedComponent='div'
+      >
         <div style={{ marginLeft: '1rem' }}>
           <FormControl component='fieldset' className={classes.formControl}>
             <FormGroup>
