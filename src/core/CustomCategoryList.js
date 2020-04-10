@@ -1,109 +1,107 @@
-import React, { useState, useEffect } from 'react';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import CategoryIcon from '@material-ui/icons/Category';
-import ListItemText from '@material-ui/core/ListItemText';
-import ExpandLess from '@material-ui/icons/ExpandLess';
-import ExpandMore from '@material-ui/icons/ExpandMore';
-import Collapse from '@material-ui/core/Collapse';
+import React, { useState, useEffect, Fragment } from 'react';
 import { FormControl, FormGroup, makeStyles } from '@material-ui/core';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Checkbox from '@material-ui/core/Checkbox';
+import { FieldArray } from 'formik';
+import GenericList from './GenericList';
 
 const useStyles = makeStyles((theme) => ({
-  rootSelect: {
-    width: '100%',
-    maxWidth: 360,
-    backgroundColor: theme.palette.primary.main,
-    color: '#fff',
-  },
-  nested: {
-    paddingLeft: theme.spacing(4),
-  },
-
   formControl: {
     margin: theme.spacing(3),
   },
 }));
 
-const convertTypes = (array) => {
+const convertTypes = (fetchedCategories) => {
   let converted = {};
-  for (let i = 0; i < array.length; i++) converted[array[i].name] = false;
+  for (let i = 0; i < fetchedCategories.length; i++)
+    converted[fetchedCategories[i].name] = false;
   converted['Default'] = false;
   return converted;
 };
 
-const CustomCategoryList = ({ name, onChange, array }) => {
+const CustomCategoryList = ({
+  fetchedCategories,
+  formikCategoryArray,
+  reset,
+  resetChildMenu,
+}) => {
   const classes = useStyles();
   const [checked, setChecked] = useState({});
-  const [open, setOpen] = useState(false);
-  const handleClick = () => {
-    setOpen(!open);
-  };
+
   useEffect(() => {
-    const object = array ? convertTypes(array) : {};
+    const object = fetchedCategories ? convertTypes(fetchedCategories) : {};
     setChecked(object);
-  }, [array]);
-  const handleChange = (event) => {
-    setChecked({ ...checked, [event.target.name]: event.target.checked });
+  }, [fetchedCategories]);
+
+  useEffect(() => {
+    if (reset) {
+      const object = fetchedCategories ? convertTypes(fetchedCategories) : {};
+      setChecked(object);
+      resetChildMenu();
+    }
+  }, [reset]);
+
+  const handleToggle = (e) => {
+    setChecked({ ...checked, [e.target.name]: e.target.checked });
   };
+
+  const fieldName = 'category';
   return (
     checked && (
-      <List
-        component='nav'
-        aria-labelledby='nested-list-subheader'
-        className={classes.rootSelect}
-      >
-        <ListItem button onClick={handleClick}>
-          <ListItemIcon style={{ color: '#fff' }}>
-            <CategoryIcon />
-          </ListItemIcon>
-          <ListItemText primary='Categories' />
-          {open ? <ExpandLess /> : <ExpandMore />}
-        </ListItem>
-        <Collapse in={open} timeout='auto' unmountOnExit>
-          <List component='div' disablePadding>
-            <ListItem button className={classes.nested}>
-              <div style={{ marginLeft: '1rem' }}>
-                <FormControl
-                  component='fieldset'
-                  className={classes.formControl}
-                >
-                  <FormGroup>
+      <GenericList>
+        <div style={{ marginLeft: '1rem' }}>
+          <FormControl component='fieldset' className={classes.formControl}>
+            <FormGroup>
+              <FieldArray
+                name={fieldName}
+                render={(arrayHelpers) => (
+                  <Fragment>
                     <FormControlLabel
                       control={
                         <Checkbox
                           checked={checked['Default']}
-                          onChange={handleChange}
+                          onChange={(e) => {
+                            handleToggle(e);
+                            if (e.target.checked) arrayHelpers.push('Default');
+                            else
+                              arrayHelpers.remove(
+                                formikCategoryArray.indexOf('Default')
+                              );
+                          }}
                           name='Default'
                           value='Default'
                         />
                       }
                       label='All Categories'
                     />
-                    {array.map((c, i) => (
-                      <div key={i}>
-                        <FormControlLabel
-                          control={
-                            <Checkbox
-                              checked={checked[c.name]}
-                              onChange={handleChange}
-                              value={c._id}
-                              name={c.name}
-                            />
-                          }
-                          label={c.name}
-                        />
-                      </div>
+                    {fetchedCategories.map((c, i) => (
+                      <FormControlLabel
+                        key={i}
+                        control={
+                          <Checkbox
+                            checked={checked[c.name]}
+                            onChange={(e) => {
+                              handleToggle(e);
+                              if (e.target.checked) arrayHelpers.push(c._id);
+                              else
+                                arrayHelpers.remove(
+                                  formikCategoryArray.indexOf(c._id)
+                                );
+                            }}
+                            value={c._id}
+                            name={c.name}
+                          />
+                        }
+                        label={c.name}
+                      />
                     ))}
-                  </FormGroup>
-                </FormControl>
-              </div>
-            </ListItem>
-          </List>
-        </Collapse>
-      </List>
+                  </Fragment>
+                )}
+              />
+            </FormGroup>
+          </FormControl>
+        </div>
+      </GenericList>
     )
   );
 };

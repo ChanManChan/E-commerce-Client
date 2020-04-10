@@ -9,7 +9,7 @@ import Toolbar from '@material-ui/core/Toolbar';
 import CustomCategoryList from './CustomCategoryList';
 import Button from '@material-ui/core/Button';
 import Grid from '@material-ui/core/Grid';
-import { Formik, Form, Field } from 'formik';
+import { Formik, Form, useField } from 'formik';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -70,8 +70,9 @@ const Search = () => {
     search: '',
     results: [],
     searched: false,
+    reset: false,
   });
-  const { categories, category, search, results, searched } = data;
+  const { categories, category, search, results, searched, reset } = data;
   const loadCategories = () => {
     getCategories().then((data) => {
       if (data.error)
@@ -83,82 +84,85 @@ const Search = () => {
     loadCategories();
   }, []);
 
-  const searchSubmit = (e) => {
-    e.preventDefault();
-    console.log('SUBMITTED DATA: ', e.target.value);
-  };
-  const handleChange = (e) => {
-    //
-    console.log('CHECKBOX: ', e.target.name, e.target.value);
-  };
-
-  const CustomSearchBar = ({ onChange, placeholder, name }) => (
-    <div className={classes.search}>
-      <div className={classes.searchIcon}>
-        <SearchIcon />
+  const CustomSearchBar = ({ placeholder, ...props }) => {
+    const [field] = useField(props);
+    return (
+      <div className={classes.search}>
+        <div className={classes.searchIcon}>
+          <SearchIcon />
+        </div>
+        <InputBase
+          {...field}
+          placeholder={placeholder}
+          classes={{
+            root: classes.inputRoot,
+            input: classes.inputInput,
+          }}
+          inputProps={{ 'aria-label': 'search' }}
+        />
       </div>
-      <InputBase
-        onChange={onChange}
-        placeholder={placeholder}
-        name={name}
-        classes={{
-          root: classes.inputRoot,
-          input: classes.inputInput,
-        }}
-        inputProps={{ 'aria-label': 'search' }}
-      />
+    );
+  };
+  const GenericToolbar = ({ children }) => (
+    <div className={classes.root}>
+      <AppBar position='static'>
+        <Toolbar>{children}</Toolbar>
+      </AppBar>
     </div>
   );
+  const resetChildMenu = () => {
+    setData({ ...data, reset: !data.reset });
+  };
   const searchForm = () => (
     <Formik
-      initialValues={{ category: '', searchbar: '' }}
+      initialValues={{ category: [], searchbar: '' }}
       onSubmit={(data, { setSubmitting, resetForm }) => {
+        setSubmitting(true);
         console.log('DATA FROM SUBMIT: ', data);
+        resetChildMenu();
+        resetForm();
+        setSubmitting(false);
       }}
     >
-      {({ isSubmitting }) => (
+      {({ values, isSubmitting }) => (
         <Form>
           <Grid container spacing={3} xs={12}>
             <Grid item xs={3}>
               {/* CATEGORY LIST */}
-              <Field
-                name='category'
-                array={categories}
-                onChange={handleChange}
-                as={CustomCategoryList}
+              <CustomCategoryList
+                fetchedCategories={categories}
+                formikCategoryArray={values.category}
+                reset={reset}
+                resetChildMenu={resetChildMenu}
               />
             </Grid>
             <Grid item xs={9}>
-              <div className={classes.root}>
-                <AppBar position='static'>
-                  <Toolbar>
-                    <Grid container xs spacing={3}>
-                      {/* SEARCH BAR */}
-                      <Grid item xs>
-                        <Field
-                          name='searchbar'
-                          onChange={handleChange}
-                          placeholder='Search...'
-                          as={CustomSearchBar}
-                        />
-                      </Grid>
-                      {/* SEARCH BUTTON */}
-                      <Grid item xs>
-                        <Button
-                          className={classes.button}
-                          variant='outlined'
-                          size='large'
-                          type='submit'
-                          color='secondary'
-                          style={{ float: 'right' }}
-                        >
-                          Search
-                        </Button>
-                      </Grid>
-                    </Grid>
-                  </Toolbar>
-                </AppBar>
-              </div>
+              <GenericToolbar>
+                <Grid container xs spacing={3}>
+                  {/* SEARCH BAR */}
+                  <Grid item xs>
+                    <CustomSearchBar
+                      placeholder={'Search products...'}
+                      name='searchbar'
+                      value={values.searchbar}
+                    />
+                  </Grid>
+                  {/* SEARCH BUTTON */}
+                  <Grid item xs>
+                    <Button
+                      className={classes.button}
+                      variant='outlined'
+                      size='large'
+                      disabled={isSubmitting}
+                      type='submit'
+                      color='secondary'
+                      style={{ float: 'right' }}
+                    >
+                      Search
+                    </Button>
+                  </Grid>
+                </Grid>
+              </GenericToolbar>
             </Grid>
           </Grid>
         </Form>

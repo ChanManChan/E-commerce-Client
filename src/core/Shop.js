@@ -79,10 +79,10 @@ const Shop = () => {
       }
     });
   };
+
   useEffect(() => {
     if (totalCalls.current < 1) {
       totalCalls.current += 1;
-      console.log('ENTERED THE USE_EFFECT:', totalCalls.current);
       init();
       return;
     } else
@@ -178,7 +178,6 @@ const Shop = () => {
       )
     );
   };
-
   const sidebar = () => (
     <Grid container spacing={3} xs={4} style={dynamicStylingSidebar()}>
       <Grid item xs>
