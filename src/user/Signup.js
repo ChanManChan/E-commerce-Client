@@ -42,8 +42,8 @@ const Signup = () => {
           className={classes.margin}
           id='mui-theme-provider-outlined-input'
           type={type}
-          helperText={errorText}
           placeholder={placeholder}
+          helperText={errorText}
           error={!!errorText}
           fullWidth
           label={label}

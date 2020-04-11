@@ -5,6 +5,8 @@ import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Checkbox from '@material-ui/core/Checkbox';
 import { FieldArray } from 'formik';
 import GenericList from './GenericList';
+import persistedState from 'use-persisted-state';
+const usePersistedState = persistedState('fetchedCategories');
 
 const useStyles = makeStyles((theme) => ({
   rootSelect: {
@@ -34,19 +36,25 @@ const CustomCategoryList = ({
 }) => {
   const classes = useStyles();
   const [checked, setChecked] = useState({});
+  const [categories, setCategories] = usePersistedState([]);
 
   useEffect(() => {
-    const object = fetchedCategories ? convertTypes(fetchedCategories) : {};
+    let storedArray = [];
+    if (localStorage.getItem('fetchedCategories'))
+      storedArray = JSON.parse(localStorage.getItem('fetchedCategories'));
+    const object =
+      storedArray.length > 0
+        ? convertTypes(storedArray)
+        : fetchedCategories
+        ? convertTypes(fetchedCategories)
+        : {};
     setChecked(object);
-  }, [fetchedCategories]);
-
-  useEffect(() => {
+    if (fetchedCategories) setCategories(fetchedCategories);
     if (reset) {
-      const object = fetchedCategories ? convertTypes(fetchedCategories) : {};
-      setChecked(object);
+      for (let prop in checked) checked[prop] = false;
       resetChildMenu();
     }
-  }, [reset]);
+  }, [fetchedCategories, reset]);
 
   const handleToggle = (e) => {
     setChecked({ ...checked, [e.target.name]: e.target.checked });
@@ -54,7 +62,8 @@ const CustomCategoryList = ({
 
   const fieldName = 'category';
   return (
-    checked && (
+    checked &&
+    categories && (
       <GenericList
         customClassName={classes.rootSelect}
         customIcon={<CategoryIcon />}
@@ -87,7 +96,7 @@ const CustomCategoryList = ({
                       }
                       label='All Categories'
                     />
-                    {fetchedCategories.map((c, i) => (
+                    {categories.map((c, i) => (
                       <FormControlLabel
                         key={i}
                         control={

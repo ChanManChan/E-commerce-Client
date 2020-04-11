@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { getCategories } from './apiCore';
+import { getCategories, list } from './apiCore';
 import { toast } from 'react-toastify';
 import SearchIcon from '@material-ui/icons/Search';
 import { fade, makeStyles } from '@material-ui/core/styles';
@@ -11,6 +11,7 @@ import Button from '@material-ui/core/Button';
 import Grid from '@material-ui/core/Grid';
 import { Formik, Form, useField } from 'formik';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
+import * as yup from 'yup';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -134,22 +135,25 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const Search = () => {
+const validationSchema = yup.object({
+  searchbar: yup.string().required('Null is not a valid search string').max(25),
+});
+
+const Search = ({ setResults }) => {
   const classes = useStyles();
   const breakPoint_902px = useMediaQuery('(max-width:902px)');
   const breakPoint_1156px = useMediaQuery('(max-width:1156px)');
   const breakPoint_1214px = useMediaQuery('(max-width:1214px)');
   const breakPoint_1423px = useMediaQuery('(max-width:1423px)');
   const breakPoint_1678px = useMediaQuery('(max-width:1678px)');
+
   const [data, setData] = useState({
     categories: [],
-    category: '',
-    search: '',
-    results: [],
-    searched: false,
     reset: false,
   });
-  const { categories, category, search, results, searched, reset } = data;
+
+  const { categories, reset } = data;
+
   const loadCategories = () => {
     getCategories().then((data) => {
       if (data.error)
@@ -162,7 +166,13 @@ const Search = () => {
   }, []);
 
   const CustomSearchBar = ({ placeholder, ...props }) => {
-    const [field] = useField(props);
+    const [field, meta] = useField(props);
+    let errorText = meta.error ? meta.error : '';
+    if (errorText.length > 0)
+      toast.error(errorText, {
+        position: toast.POSITION.BOTTOM_LEFT,
+        toastId: 13,
+      });
     return (
       <div className={classes.search}>
         <div className={classes.searchIcon}>
@@ -196,14 +206,38 @@ const Search = () => {
     </div>
   );
   const resetChildMenu = () => {
-    setData({ ...data, reset: !data.reset });
+    setData((currentState) => ({
+      ...currentState,
+      reset: !currentState.reset,
+    }));
+  };
+  const searchData = (data) => {
+    if (data)
+      list({
+        search: data.searchbar || undefined,
+        category: data.category,
+      }).then((response) => {
+        if (response.error)
+          toast.error(`${response.error}`, {
+            position: toast.POSITION.BOTTOM_LEFT,
+          });
+        else {
+          toast.success(`${response.length} results fetched`, {
+            position: toast.POSITION.BOTTOM_LEFT,
+          });
+          setResults(response);
+        }
+      });
   };
   const searchForm = () => (
     <Formik
       initialValues={{ category: [], searchbar: '' }}
+      validationSchema={validationSchema}
+      validateOnChange={false}
+      validateOnBlur={false}
       onSubmit={(data, { setSubmitting, resetForm }) => {
         setSubmitting(true);
-        console.log('DATA FROM SUBMIT: ', data);
+        searchData(data);
         resetChildMenu();
         resetForm();
         setSubmitting(false);
