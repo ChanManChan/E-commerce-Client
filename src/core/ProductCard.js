@@ -1,5 +1,5 @@
-import React, { useState, useEffect, Fragment } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, Fragment, useEffect } from 'react';
+import { Link, Redirect } from 'react-router-dom';
 import { makeStyles } from '@material-ui/core/styles';
 import {
   Card,
@@ -17,6 +17,7 @@ import VisibilityIcon from '@material-ui/icons/Visibility';
 import DefaultImage from '../images/defaultProduct.jpg';
 import { API } from '../config';
 import moment from 'moment';
+import { addItem } from './cartHelpers';
 
 const useStyles = makeStyles({
   root: {
@@ -60,24 +61,27 @@ const useStyles = makeStyles({
   },
 });
 
+const testImage = (URL) => {
+  const imgPromise = new Promise(function imgPromise(resolve, reject) {
+    const imgElement = new Image();
+    imgElement.addEventListener('load', function imgOnLoad() {
+      resolve(this);
+    });
+    imgElement.addEventListener('error', function imgOnError() {
+      reject();
+    });
+    imgElement.src = URL;
+  });
+  return imgPromise;
+};
+
 const ProductCard = ({ product, expand = false, relatedProduct = false }) => {
   const classes = useStyles();
   const breakPoint_385px = useMediaQuery('(max-width:385px)');
   const [renderActual, setRenderActual] = useState(false);
+  const [redirect, setRedirect] = useState(false);
+
   useEffect(() => {
-    const testImage = (URL) => {
-      const imgPromise = new Promise(function imgPromise(resolve, reject) {
-        const imgElement = new Image();
-        imgElement.addEventListener('load', function imgOnLoad() {
-          resolve(this);
-        });
-        imgElement.addEventListener('error', function imgOnError() {
-          reject();
-        });
-        imgElement.src = URL;
-      });
-      return imgPromise;
-    };
     testImage(`${API}/product/photo/${product._id}`).then(
       function fulfilled(img) {
         setRenderActual(true);
@@ -86,8 +90,7 @@ const ProductCard = ({ product, expand = false, relatedProduct = false }) => {
         setRenderActual(false);
       }
     );
-  }, []);
-
+  });
   const showStock = (quantity) => {
     return quantity > 0 ? (
       <strong className='badge badge-pill badge-success mr-2'>In Stock</strong>
@@ -96,6 +99,16 @@ const ProductCard = ({ product, expand = false, relatedProduct = false }) => {
         Out of Stock
       </strong>
     );
+  };
+
+  const addToCart = () => {
+    addItem(product, () => {
+      setRedirect(true);
+    });
+  };
+
+  const shouldRedirect = (redirect) => {
+    if (redirect) return <Redirect to='/cart' />;
   };
 
   const fetchImage = () => `${API}/product/photo/${product._id}`;
@@ -109,6 +122,7 @@ const ProductCard = ({ product, expand = false, relatedProduct = false }) => {
       : classes.root;
   return (
     <Grid item xs>
+      {shouldRedirect(redirect)}
       <Card className={swapMedia()}>
         <CardActionArea>
           <CardMedia
@@ -119,7 +133,7 @@ const ProductCard = ({ product, expand = false, relatedProduct = false }) => {
                   : classes.expandImage
                 : classes.media
             }
-            image={renderActual || expand ? fetchImage() : DefaultImage}
+            image={renderActual ? fetchImage() : DefaultImage}
             title={product.name}
           />
           <CardContent>
@@ -195,6 +209,7 @@ const ProductCard = ({ product, expand = false, relatedProduct = false }) => {
           <Button
             size='medium'
             color='secondary'
+            onClick={addToCart}
             variant='outlined'
             className={expand ? classes.expandButton : classes.button}
             startIcon={<AddShoppingCartIcon />}

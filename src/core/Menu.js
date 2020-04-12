@@ -9,6 +9,20 @@ import {
   useMediaQuery,
 } from '@material-ui/core';
 import { toast } from 'react-toastify';
+import { itemTotal } from './cartHelpers';
+import Badge from '@material-ui/core/Badge';
+import { withStyles } from '@material-ui/core/styles';
+import IconButton from '@material-ui/core/IconButton';
+import ShoppingCartIcon from '@material-ui/icons/ShoppingCart';
+
+const StyledBadge = withStyles((theme) => ({
+  badge: {
+    right: -3,
+    top: 13,
+    border: `2px solid ${theme.palette.background.paper}`,
+    padding: '0 4px',
+  },
+}))(Badge);
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -38,7 +52,11 @@ const isActive = (history, path, breakPoint_480px) => {
           margin: '.3rem',
         };
 };
-
+const isCartActive = (history, path) => {
+  if (history.location.pathname === path)
+    return { color: '#607d8b', marginRight: '1.18rem' };
+  else return { color: '#fff', marginRight: '1.18rem' };
+};
 const Menu = ({ history }) => {
   const classes = useStyles();
   const breakPoint_480px = useMediaQuery('(max-width:480px)');
@@ -98,6 +116,16 @@ const Menu = ({ history }) => {
           <div style={dynamicStyling()}>
             {isAuthenticated() ? (
               <Fragment>
+                <IconButton
+                  aria-label='cart'
+                  component={Link}
+                  to='/cart'
+                  style={isCartActive(history, '/cart')}
+                >
+                  <StyledBadge badgeContent={itemTotal()} color='secondary'>
+                    <ShoppingCartIcon />
+                  </StyledBadge>
+                </IconButton>
                 <Button
                   component={Link}
                   to='/'
