@@ -86,6 +86,14 @@ const Shop = () => {
       );
   }, [myFilters]);
 
+  useEffect(() => {
+    return () => {
+      let reset = { ...JSON.parse(localStorage.getItem('clState')) };
+      for (let prop in reset) reset[prop] = false;
+      localStorage.setItem('clState', JSON.stringify(reset));
+    };
+  }, []);
+
   const handleFilters = (filters, filterBy) => {
     const newFilters = { ...myFilters };
     newFilters.filters[filterBy] = filters;

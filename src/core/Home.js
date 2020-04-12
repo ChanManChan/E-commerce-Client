@@ -50,11 +50,15 @@ const Home = () => {
     });
   };
   const loadProductsByArrival = () => {
-    getProducts('createdAt').then((data) => {
-      if (data.error)
-        toast.error(`${data.error}`, { position: toast.POSITION.BOTTOM_LEFT });
-      else setProductsByArrival(data);
-    });
+    getProducts('createdAt')
+      .then((data) => {
+        if (data.error)
+          toast.error(`${data.error}`, {
+            position: toast.POSITION.BOTTOM_LEFT,
+          });
+        else setProductsByArrival(data);
+      })
+      .catch((err) => console.log('ERROR FROM ARRIVAL: ', err));
   };
   useEffect(() => {
     loadProductsByArrival();
@@ -96,7 +100,7 @@ const Home = () => {
                 size='small'
                 onClick={() => {
                   setProductsBySearch([]);
-                  toast.success('Cleared', {
+                  toast.success('Queried items cleared', {
                     position: toast.POSITION.BOTTOM_LEFT,
                   });
                 }}

@@ -222,9 +222,14 @@ const Search = ({ setResults }) => {
             position: toast.POSITION.BOTTOM_LEFT,
           });
         else {
-          toast.success(`${response.length} results fetched`, {
-            position: toast.POSITION.BOTTOM_LEFT,
-          });
+          if (response.length > 0)
+            toast.success(`${response.length} items fetched`, {
+              position: toast.POSITION.BOTTOM_LEFT,
+            });
+          else
+            toast.error('No products found', {
+              position: toast.POSITION.BOTTOM_LEFT,
+            });
           setResults(response);
         }
       });
