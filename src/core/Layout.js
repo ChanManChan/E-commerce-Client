@@ -8,7 +8,7 @@ const Layout = ({
   children,
 }) => {
   return (
-    <div>
+    <div className='main'>
       <Menu />
       <div className='jumbotron'>
         <h2>{title}</h2>

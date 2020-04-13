@@ -11,6 +11,7 @@ import AdminDashboard from './user/AdminDashboard';
 import AddCategory from './admin/AddCategory';
 import AddProduct from './admin/AddProduct';
 import Product from './core/Product';
+import Cart from './core/Cart';
 
 const Routes = () => {
   return (
@@ -22,6 +23,7 @@ const Routes = () => {
         <Route exact path='/signup' component={Signup} />
         <Route exact path='/shop' component={Shop} />
         <PrivateRoute exact path='/user/dashboard' component={Dashboard} />
+        <Route exact path='/cart' component={Cart} />
         <AdminRoute exact path='/admin/dashboard' component={AdminDashboard} />
         <AdminRoute exact path='/create/category' component={AddCategory} />
         <AdminRoute exact path='/create/product' component={AddProduct} />
