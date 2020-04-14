@@ -116,7 +116,7 @@ const Cart = () => {
             {'Your Cart Summary'}
           </div>
           <hr />
-          <Checkout products={items} />
+          <Checkout products={items} setRun={setRun} run={run} />
         </Grid>
       </Grid>
     </Layout>

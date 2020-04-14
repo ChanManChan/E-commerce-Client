@@ -61,3 +61,10 @@ export const removeItem = (productId) => {
   }
   return cart;
 };
+
+export const emptyCart = (next) => {
+  if (typeof window !== undefined) {
+    if (localStorage.getItem('cart')) localStorage.removeItem('cart');
+    next();
+  }
+};
