@@ -179,9 +179,10 @@ const Checkout = ({ products, setRun = (f) => f, run = undefined }) => {
               // Empty cart
               emptyCart(() => {
                 setRun(!run);
-                toast.info('Cart is Empty', {
+                toast.info('Cart is Emptied', {
                   position: toast.POSITION.BOTTOM_LEFT,
                 });
+                setData({ ...data, address: '' });
               });
             }
             setData({
@@ -223,6 +224,8 @@ const Checkout = ({ products, setRun = (f) => f, run = undefined }) => {
         setData({
           ...data,
           error: err.errors[0],
+          [e.target === null ? 'address' : e.target.name]:
+            e.target === null ? '' : e.target.value,
         });
       });
   };

@@ -143,7 +143,8 @@ const ProductCard = ({
         setRenderActual(false);
       }
     );
-  });
+  }, [product]);
+
   const showStock = (quantity) => {
     return quantity > 0 ? (
       <strong className='badge badge-pill badge-success mr-2'>In Stock</strong>

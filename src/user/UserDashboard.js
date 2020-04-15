@@ -7,10 +7,12 @@ import AddShoppingCartIcon from '@material-ui/icons/AddShoppingCart';
 import Button from '@material-ui/core/Button';
 import { makeStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
+import useMediaQuery from '@material-ui/core/useMediaQuery';
 
 const useStyles = makeStyles((theme) => ({
   button1: {
     margin: theme.spacing(1),
+    width: '90%',
     '&:hover': {
       color: '#fff',
       backgroundColor: '#6200ea',
@@ -18,6 +20,7 @@ const useStyles = makeStyles((theme) => ({
   },
   button2: {
     margin: theme.spacing(1),
+    width: '90%',
     '&:hover': {
       color: '#fff',
       backgroundColor: '#f57f17',
@@ -26,13 +29,20 @@ const useStyles = makeStyles((theme) => ({
 }));
 const UserDashboard = () => {
   const classes = useStyles();
+  const breakPoint_750px = useMediaQuery('(max-width:750px)');
+
   const {
     user: { _id, name, email, role },
   } = isAuthenticated();
 
+  const userLinksStyling = () => (breakPoint_750px ? '85rem' : '24rem');
+
   const userLinks = () => (
     <Grid item xs>
-      <div className='card' style={{ maxWidth: '24rem', margin: '0 auto' }}>
+      <div
+        className='card'
+        style={{ maxWidth: userLinksStyling(), margin: '0 auto' }}
+      >
         <h4 className='card-header'>User Links</h4>
         <ul className='list-group'>
           <li className='list-group-item'>
@@ -97,7 +107,12 @@ const UserDashboard = () => {
       className='container-fluid'
     >
       {/* <div className='row'> */}
-      <Grid container spacing={3} style={{ marginBottom: '5rem' }}>
+      <Grid
+        container
+        spacing={3}
+        style={{ marginBottom: '5rem' }}
+        direction={breakPoint_750px ? 'column' : 'row'}
+      >
         <Grid item xs>
           {userInfo()}
           {purchaseHistory()}
