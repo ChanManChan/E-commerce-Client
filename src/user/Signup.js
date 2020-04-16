@@ -12,6 +12,7 @@ import { green } from '@material-ui/core/colors';
 import * as yup from 'yup';
 import { toast } from 'react-toastify';
 import { signup } from '../auth';
+import useMediaQuery from '@material-ui/core/useMediaQuery';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -29,6 +30,7 @@ const theme = createMuiTheme({
   },
 });
 const Signup = () => {
+  const breakPoint_576px = useMediaQuery('(max-width:576px)');
   const [buttonText, setButtonText] = useState('Submit');
   const classes = useStyles();
 
@@ -143,13 +145,16 @@ const Signup = () => {
     </Formik>
   );
 
+  const styling = () =>
+    breakPoint_576px ? { marginRight: '1rem' } : { margin: '0 auto' };
+
   return (
     <Layout
       title='Signup'
       description='Signup to Node React E-commerce App'
       className='container col-md-6'
     >
-      {signUpForm()}
+      <div style={styling()}>{signUpForm()}</div>
     </Layout>
   );
 };

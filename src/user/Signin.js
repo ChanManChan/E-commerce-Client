@@ -13,6 +13,7 @@ import * as yup from 'yup';
 import { toast } from 'react-toastify';
 import { signin, authenticate, isAuthenticated } from '../auth';
 import { Redirect } from 'react-router-dom';
+import useMediaQuery from '@material-ui/core/useMediaQuery';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -45,6 +46,7 @@ const Signin = () => {
     buttonText: 'Submit',
     redirectToReferrer: false,
   });
+  const breakPoint_576px = useMediaQuery('(max-width:576px)');
   const { user } = isAuthenticated();
   const classes = useStyles();
   const { buttonText, redirectToReferrer } = values;
@@ -136,6 +138,10 @@ const Signin = () => {
     }
     if (isAuthenticated()) return <Redirect to='/' />;
   };
+
+  const styling = () =>
+    breakPoint_576px ? { marginRight: '1rem' } : { margin: '0 auto' };
+
   return (
     <Layout
       title='Signin'
@@ -143,7 +149,7 @@ const Signin = () => {
       className='container col-md-6'
     >
       {redirectUser()}
-      {signInForm()}
+      <div style={styling()}>{signInForm()}</div>
     </Layout>
   );
 };

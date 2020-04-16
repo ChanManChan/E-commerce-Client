@@ -1,24 +1,16 @@
-import React, { useState, useEffect, Fragment, useMemo } from 'react';
+import React, { useState, useEffect, Fragment } from 'react';
 import Layout from '../core/Layout';
 import { isAuthenticated } from '../auth';
-import { listOrders, getStatusValues } from './apiAdmin';
+import { listOrders, getStatusValues, updateOrderStatus } from './apiAdmin';
 import { toast } from 'react-toastify';
 import { makeStyles } from '@material-ui/core/styles';
 import MaterialTable from 'material-table';
 import moment from 'moment';
-import GenericList from '../core/GenericList';
-import ListAltIcon from '@material-ui/icons/ListAlt';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemText from '@material-ui/core/ListItemText';
-import ListSubheader from '@material-ui/core/ListSubheader';
 import Select from '@material-ui/core/Select';
-import Checkbox from '@material-ui/core/Checkbox';
-import Chip from '@material-ui/core/Chip';
 import MenuItem from '@material-ui/core/MenuItem';
 import InputLabel from '@material-ui/core/InputLabel';
-import Input from '@material-ui/core/Input';
 import FormControl from '@material-ui/core/FormControl';
+import DisplayProducts from './DisplayProducts';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -28,41 +20,17 @@ const useStyles = makeStyles((theme) => ({
     fontSize: '2rem',
     display: 'inline',
   },
-  productList: {
-    width: '19rem',
-    maxWidth: 360,
-    backgroundColor: theme.palette.background.paper,
-  },
-  productsSubList: {
-    width: '100%',
-    maxWidth: 360,
-    backgroundColor: theme.palette.background.paper,
-    position: 'relative',
-    overflow: 'auto',
-    maxHeight: 300,
-  },
-  listSection: {
-    backgroundColor: 'inherit',
-  },
-  ul: {
-    backgroundColor: 'inherit',
-    padding: 0,
-  },
   formControl: {
     margin: theme.spacing(1),
     minWidth: 120,
-  },
-  chip: {
-    margin: 2,
   },
 }));
 
 const Orders = () => {
   const classes = useStyles();
   const [orders, setOrders] = useState([]);
-  const [statusValues, setStatusValues] = useState([]);
-  const [orderStatus, setOrderStatus] = useState({});
   const { user, token } = isAuthenticated();
+  const [statusValues, setStatusValues] = useState([]);
 
   const [state, setState] = useState({
     columns: [
@@ -71,7 +39,15 @@ const Orders = () => {
       {
         title: 'Status',
         field: 'orderId',
-        render: (rowData) => <DisplayStatus currentOrderId={rowData.orderId} />,
+        field: 'statuses',
+        field: 'orderStatus',
+        render: (rowData) => (
+          <DisplayStatus
+            currentStatus={rowData.orderStatus}
+            currentOrderId={rowData.orderId}
+            orderStatuses={rowData.statuses}
+          />
+        ),
       },
       { title: 'Transaction ID', field: 'transaction_id' },
       { title: 'Amount', field: 'amount' },
@@ -96,102 +72,53 @@ const Orders = () => {
   const handleChange = (orderId) => (event) => {
     setState((currentState) => {
       let data = [...currentState.data];
-      loop1: for (let i = 0; i < data.length; i++) {
+      for (let i = 0; i < data.length; i++)
         if (data[i]['orderId'] === orderId)
-          data[i]['orderStatus'] = event.target.value;
-        break loop1;
-      }
+          if (event.target.value !== '')
+            data[i][event.target.name] = event.target.value;
+          else
+            toast.warn('Status has to be valid', {
+              position: toast.POSITION.BOTTOM_LEFT,
+            });
       return { ...currentState, data };
     });
+    updateOrderStatus(user._id, token, orderId, event.target.value).then(
+      (response) => {
+        if (response.error)
+          toast.error(`${response.error}`, {
+            position: toast.POSITION.BOTTOM_LEFT,
+          });
+        else
+          toast.success('Successfully updated Database', {
+            position: toast.POSITION.BOTTOM_LEFT,
+          });
+      }
+    );
   };
-  // const fetchStatusValue = (orderId, tuples) => {
-  //   console.log('INSIDE FETCH STATUS VALUE FUNCTION');
-  //   if (tuples.length > 0) {
-  //     console.log('ORDER_ID: ', orderId);
-  //     console.log('TUPLES: ', tuples);
-  //     let tuple = tuples.find((obj) => obj.orderId === orderId);
-  //     console.log('SEARCHING TUPLE: ', tuple);
-  //     if (tuple) return tuple['orderStatus'];
-  //   }
-  // };
 
-  const DisplayStatus = ({ currentOrderId }) => (
+  const DisplayStatus = ({ currentStatus, currentOrderId, orderStatuses }) => (
     <FormControl variant='outlined' className={classes.formControl}>
-      <InputLabel htmlFor='outlined-age-native-simple'>Status</InputLabel>
+      <InputLabel htmlFor='demo-simple-select-outlined-label'>
+        Status
+      </InputLabel>
       <Select
-        native
-        onChange={(e) => handleChange(currentOrderId, e)}
+        labelId='demo-simple-select-outlined-label'
+        id='demo-simple-select-outlined'
+        value={currentStatus}
+        name='orderStatus'
+        onChange={handleChange(currentOrderId)}
         label='Status'
-        inputProps={{
-          name: 'status',
-          id: 'outlined-age-native-simple',
-        }}
       >
-        <option aria-label='None' value='' />
-        {statusValues.map((status, index) => (
-          <option key={index} value={status}>
-            {status}
-          </option>
+        <MenuItem value=''>
+          <em>None</em>
+        </MenuItem>
+        {orderStatuses.map((s, i) => (
+          <MenuItem key={i} value={s}>
+            {s}
+          </MenuItem>
         ))}
       </Select>
     </FormControl>
-  );
-
-  const DisplayProducts = ({ orderedProducts }) => (
-    <GenericList
-      customClassName={classes.productList}
-      customIcon={<ListAltIcon />}
-      customIconColor='#f44336'
-      primaryText='View products'
-      usedComponent='ul'
-    >
-      <List className={classes.productsSubList} subheader={<li />}>
-        {orderedProducts.map((singleProduct, i) => (
-          <li key={`section-${i}`} className={classes.listSection}>
-            <ul className={classes.ul}>
-              <ListSubheader
-                style={{ color: '#009688', backgroundColor: '#f4f4f4' }}
-              >
-                {singleProduct.name}
-              </ListSubheader>
-              {Object.keys(
-                (({ name, __v, ...rest }) => rest)(singleProduct)
-              ).map((key, index) =>
-                key === 'createdAt' || key === 'updatedAt' ? (
-                  <ListItem key={index}>
-                    <ListItemText
-                      primary={key}
-                      secondary={moment(
-                        (({ name, __v, ...rest }) => rest)(singleProduct)[key]
-                      ).format('dddd, MMMM Do YYYY, h:mm:ss a')}
-                    />
-                  </ListItem>
-                ) : key === 'price' ? (
-                  <ListItem key={index}>
-                    <ListItemText
-                      primary={key}
-                      secondary={
-                        '\u20B9 ' +
-                        (({ name, __v, ...rest }) => rest)(singleProduct)[key]
-                      }
-                    />
-                  </ListItem>
-                ) : (
-                  <ListItem key={index}>
-                    <ListItemText
-                      primary={key}
-                      secondary={
-                        (({ name, __v, ...rest }) => rest)(singleProduct)[key]
-                      }
-                    />
-                  </ListItem>
-                )
-              )}
-            </ul>
-          </li>
-        ))}
-      </List>
-    </GenericList>
   );
 
   const CustomTable = () => (
@@ -272,7 +199,7 @@ const Orders = () => {
   }, []);
 
   useEffect(() => {
-    orders.map((o, i) => {
+    orders.map((o) => {
       setState((currentState) => {
         const data = [...currentState.data];
         data.push({
@@ -285,6 +212,7 @@ const Orders = () => {
           orderLength: o.products.length,
           orderStatus: o.status,
           productList: o.products,
+          statuses: statusValues,
         });
         return { ...currentState, data };
       });

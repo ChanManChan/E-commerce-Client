@@ -63,7 +63,7 @@ const UserDashboard = () => {
               variant='contained'
               color='primary'
               component={Link}
-              to='/profile/update'
+              to={`/profile/${_id}`}
               size='large'
               className={classes.button1}
               startIcon={<SaveIcon />}

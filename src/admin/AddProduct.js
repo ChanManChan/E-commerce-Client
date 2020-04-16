@@ -133,7 +133,9 @@ const AddProduct = () => {
   const CustomSelectField = ({ value, name, children, label, onChange }) => {
     return (
       <FormControl variant='outlined' className={classes.formControl}>
-        <InputLabel id='demo-simple-select-outlined-label'>{label}</InputLabel>
+        <InputLabel htmlFor='demo-simple-select-outlined-label'>
+          {label}
+        </InputLabel>
         <Select
           labelId='demo-simple-select-outlined-label'
           id='demo-simple-select-outlined'
