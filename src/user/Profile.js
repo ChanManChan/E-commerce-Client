@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Layout from '../core/Layout';
 import { isAuthenticated } from '../auth';
-import { Link } from 'react-router-dom';
 import { read, update, updateLocalStorage } from './apiUser';
 import { toast } from 'react-toastify';
 import { makeStyles } from '@material-ui/core/styles';
@@ -43,12 +42,12 @@ const Profile = (props) => {
   const classes = useStyles();
   const breakPoint_576px = useMediaQuery('(max-width:576px)');
 
-  const [{ name, email, password, buttonText, success }, setValues] = useState({
+  const [{ name, email, password, buttonText, dirty }, setValues] = useState({
     name: '',
     email: '',
     password: '',
     buttonText: 'Update',
-    success: false,
+    dirty: false,
   });
   const { token } = isAuthenticated();
 
@@ -100,6 +99,13 @@ const Profile = (props) => {
 
   const handleReset = (resetForm) => {
     if (window.confirm('Reset form?')) {
+      setValues({
+        buttonText: 'Update',
+        dirty: true,
+        name: '',
+        email: '',
+        password: '',
+      });
       resetForm();
     }
   };
@@ -107,10 +113,11 @@ const Profile = (props) => {
     userName = '',
     userEmail = '',
     userPassword = '',
-    success = false
+    dirty = false
   ) =>
-    (userName || userEmail || userPassword || success) && (
+    (userName || userEmail || userPassword || dirty) && (
       <Formik
+        enableReinitialize={true}
         initialValues={{
           name: userName,
           email: userEmail,
@@ -123,13 +130,29 @@ const Profile = (props) => {
             ...currentState,
             buttonText: 'Updating...',
           }));
-          console.log('DATA FROM UPDATE PROFILE: ', data);
-          setValues({
-            buttonText: 'Update',
-            success: true,
-            name: '',
-            email: '',
-            password: '',
+          update(props.match.params.userId, token, data).then((response) => {
+            if (response.error) {
+              setValues((currentState) => ({
+                ...currentState,
+                buttonText: 'Update',
+              }));
+              toast.error(`${response.error}`, {
+                position: toast.POSITION.BOTTOM_LEFT,
+              });
+            } else {
+              updateLocalStorage(response, () => {
+                setValues({
+                  buttonText: 'Update',
+                  dirty: false,
+                  name: response.name,
+                  email: response.email,
+                  password: '',
+                });
+                toast.success('Profile successfully updated', {
+                  position: toast.POSITION.BOTTOM_LEFT,
+                });
+              });
+            }
           });
           setSubmitting(false);
         }}
@@ -203,7 +226,7 @@ const Profile = (props) => {
     >
       <div style={styling()}>
         <div className={classes.root}>{'Account Info'}</div>
-        {profileUpdateForm(name, email, password, success)}
+        {profileUpdateForm(name, email, password, dirty)}
       </div>
     </Layout>
   );

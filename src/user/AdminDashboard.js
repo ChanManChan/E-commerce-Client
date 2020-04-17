@@ -10,7 +10,9 @@ import Grid from '@material-ui/core/Grid';
 import VisibilityIcon from '@material-ui/icons/Visibility';
 import { green, indigo } from '@material-ui/core/colors';
 import { createMuiTheme, ThemeProvider } from '@material-ui/core/styles';
+import HeadsetMicIcon from '@material-ui/icons/HeadsetMic';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
+import CustomUserInfo from './CustomUserInfo';
 
 const customTheme1 = createMuiTheme({
   palette: {
@@ -77,6 +79,29 @@ const useStyles = makeStyles((theme) => ({
     '&:hover': {
       color: '#fff',
       backgroundColor: '#66bb6a',
+    },
+  },
+  button4: {
+    margin: theme.spacing(1),
+    width: '90%',
+    color: '#fff',
+    whiteSpace: 'nowrap',
+    backgroundColor: '#004d40',
+    '&:hover': {
+      color: '#fff',
+      backgroundColor: '#00695c',
+    },
+  },
+  breakPoint_308pxButton4: {
+    margin: theme.spacing(1),
+    width: '90%',
+    fontSize: '.6rem',
+    color: '#fff',
+    whiteSpace: 'nowrap',
+    backgroundColor: '#004d40',
+    '&:hover': {
+      color: '#fff',
+      backgroundColor: '#00695c',
     },
   },
 }));
@@ -150,23 +175,30 @@ const AdminDashboard = () => {
               </Button>
             </ThemeProvider>
           </li>
+          <li className='list-group-item'>
+            <Button
+              variant='contained'
+              component={Link}
+              to='/admin/products'
+              size='large'
+              className={
+                breakPoint_308px
+                  ? classes.breakPoint_308pxButton4
+                  : classes.button4
+              }
+              startIcon={<HeadsetMicIcon />}
+            >
+              Manage Products
+            </Button>
+          </li>
         </ul>
       </div>
     </Grid>
   );
 
-  const adminInfo = () => (
-    <Grid item xs>
-      <div className='card' style={{ maxWidth: '85rem', margin: '0 auto' }}>
-        <h3 className='card-header'>User Information</h3>
-        <ul className='list-group'>
-          <li className='list-group-item'>{name}</li>
-          <li className='list-group-item'>{email}</li>
-          <li className='list-group-item'>
-            {role === 1 ? 'Admin' : 'Registered User'}
-          </li>
-        </ul>
-      </div>
+  const adminInfo = (_id, name, email, role) => (
+    <Grid item xs style={{ minWidth: '60vw' }}>
+      <CustomUserInfo userData={{ _id, name, email, role }} />
     </Grid>
   );
   return (
@@ -175,19 +207,15 @@ const AdminDashboard = () => {
       description={`G'day ${name}`}
       className='container-fluid'
     >
-      {/* <div className='row'> */}
       <Grid
         container
         spacing={3}
         style={{ marginBottom: '5rem' }}
         direction={breakPoint_609px ? 'column' : 'row'}
       >
-        {adminInfo()}
+        {adminInfo(_id, name, email, role)}
         {adminLinks()}
       </Grid>
-      {/* <div className='col-9'>{}</div> */}
-      {/* <div className='col-3'>{}</div> */}
-      {/* </div> */}
     </Layout>
   );
 };
