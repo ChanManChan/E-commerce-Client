@@ -162,6 +162,7 @@ export default function EnhancedTable(props) {
             numSelected={selected.length}
             selectedProducts={selected}
             resetSelected={setSelected}
+            records={rows}
           />
           <TableContainer>
             <Table

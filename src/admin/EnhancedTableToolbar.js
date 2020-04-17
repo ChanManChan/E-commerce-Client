@@ -11,7 +11,6 @@ import { toast } from 'react-toastify';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import DeleteIcon from '@material-ui/icons/Delete';
-import FilterListIcon from '@material-ui/icons/FilterList';
 import { deleteMultipleProducts } from './apiAdmin';
 import IconButton from '@material-ui/core/IconButton';
 import Tooltip from '@material-ui/core/Tooltip';
@@ -19,6 +18,14 @@ import clsx from 'clsx';
 import PropTypes from 'prop-types';
 import { lighten, makeStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
+import SystemUpdateAltIcon from '@material-ui/icons/SystemUpdateAlt';
+import CustomModal from './CustomModal';
+import { FixedSizeList } from 'react-window';
+import ListItemText from '@material-ui/core/ListItemText';
+import ListItem from '@material-ui/core/ListItem';
+import { useEffect } from 'react';
+import AutoSizer from 'react-virtualized-auto-sizer';
+import { Link } from 'react-router-dom';
 
 function PaperComponent(props) {
   return (
@@ -30,6 +37,26 @@ function PaperComponent(props) {
     </Draggable>
   );
 }
+
+function renderRow(props) {
+  const { index, style, data } = props;
+  return (
+    <ListItem
+      button
+      style={style}
+      key={index}
+      component={Link}
+      to={`/admin/product/update/${data[index]._id}`}
+    >
+      <ListItemText primary={`${data[index].name}`} />
+    </ListItem>
+  );
+}
+
+renderRow.propTypes = {
+  index: PropTypes.number.isRequired,
+  style: PropTypes.object.isRequired,
+};
 
 const useToolbarStyles = makeStyles((theme) => ({
   root: {
@@ -49,13 +76,35 @@ const useToolbarStyles = makeStyles((theme) => ({
   title: {
     flex: '1 1 100%',
   },
+  modalListRoot: {
+    width: '100%',
+    height: 400,
+    backgroundColor: theme.palette.background.paper,
+  },
 }));
 
 const EnhancedTableToolbar = (props) => {
   const classes = useToolbarStyles();
-  const { numSelected, selectedProducts, resetSelected } = props;
+  const { numSelected, selectedProducts, resetSelected, records } = props;
   const [open, setOpen] = useState(false);
   const { user, token } = isAuthenticated();
+  const [modalOpen, setModalOpen] = useState(false);
+  const [productList, setProductList] = useState([]);
+
+  useEffect(() => {
+    let list = [];
+    for (let i = 0; i < records.length; i++)
+      list.push({ _id: records[i]._id, name: records[i].name });
+    setProductList(list);
+  }, []);
+
+  const handleModalOpen = () => {
+    setModalOpen(true);
+  };
+
+  const handleModalClose = () => {
+    setModalOpen(false);
+  };
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -118,9 +167,9 @@ const EnhancedTableToolbar = (props) => {
             </IconButton>
           </Tooltip>
         ) : (
-          <Tooltip title='Filter list'>
-            <IconButton aria-label='filter list'>
-              <FilterListIcon />
+          <Tooltip title='Update products' onClick={handleModalOpen}>
+            <IconButton aria-label='update list'>
+              <SystemUpdateAltIcon />
             </IconButton>
           </Tooltip>
         )}
@@ -148,6 +197,23 @@ const EnhancedTableToolbar = (props) => {
           </Button>
         </DialogActions>
       </Dialog>
+      <CustomModal modalOpen={modalOpen} handleModalClose={handleModalClose}>
+        <div className={classes.modalListRoot}>
+          <AutoSizer>
+            {({ height, width }) => (
+              <FixedSizeList
+                height={height}
+                width={width}
+                itemSize={46}
+                itemCount={productList.length}
+                itemData={productList}
+              >
+                {renderRow}
+              </FixedSizeList>
+            )}
+          </AutoSizer>
+        </div>
+      </CustomModal>
     </Fragment>
   );
 };

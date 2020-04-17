@@ -90,7 +90,7 @@ export const updateOrderStatus = (userId, token, orderId, status) => {
  */
 
 export const getProducts = (sortBy) => {
-  return fetch(`${API}/products?${sortBy}&order=desc&limit=100`, {
+  return fetch(`${API}/products?${sortBy}&order=desc&limit=undefined`, {
     method: 'GET',
   })
     .then((response) => {
