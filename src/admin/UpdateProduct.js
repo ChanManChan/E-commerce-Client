@@ -1,7 +1,7 @@
-import React, { useState, useEffect, Fragment } from 'react';
+import React, { useState, useEffect } from 'react';
 import Layout from '../core/Layout';
 import { isAuthenticated } from '../auth';
-import { Link } from 'react-router-dom';
+import { Link, Redirect } from 'react-router-dom';
 import * as yup from 'yup';
 import { toast } from 'react-toastify';
 import { Formik, Form, useField, Field } from 'formik';
@@ -18,27 +18,16 @@ import {
   Grid,
 } from '@material-ui/core';
 import { green } from '@material-ui/core/colors';
-import CloudUploadIcon from '@material-ui/icons/CloudUpload';
 import {
   getProduct,
   deleteProduct,
   getCategories,
   updateProduct,
 } from './apiAdmin';
-import DefaultProduct from '../images/defaultProduct.jpg';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
-
-const validateForm = (errors, unknownInput) => {
-  let valid = true;
-  Object.values(errors).forEach(
-    // if we have an error string set valid to false
-    (val) => val.length > 0 && (valid = false)
-  );
-  const { category, shipping, fileSize } = unknownInput;
-  if (category.length === 0 || shipping.length === 0 || fileSize > 100000)
-    valid = false;
-  return valid;
-};
+import ImageHandler from './ImageHandler';
+import DeleteIcon from '@material-ui/icons/Delete';
+import IconButton from '@material-ui/core/IconButton';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -68,6 +57,9 @@ const useStyles = makeStyles((theme) => ({
       backgroundColor: '#f57f17',
     },
   },
+  iconButtonStyle: {
+    marginRight: '.9rem',
+  },
 }));
 const theme = createMuiTheme({
   palette: {
@@ -90,6 +82,7 @@ const validationSchema = yup.object({
   quantity: yup.number(),
   category: yup.string().required('Please select a category'),
   shipping: yup.number().required('Shipping field cannot be null'),
+  photo: yup.mixed().required('Add a product image'),
 });
 
 const UpdateProduct = (props) => {
@@ -97,7 +90,7 @@ const UpdateProduct = (props) => {
   const breakPoint_1055px = useMediaQuery('(max-width:1055px)');
   const { user, token } = isAuthenticated();
   const [values, setValues] = useState({
-    buttonText: 'Submit',
+    buttonText: 'Update',
     categories: [],
     productDetails: {
       name: '',
@@ -107,21 +100,16 @@ const UpdateProduct = (props) => {
       shipping: '',
       quantity: 0,
       formData: '',
+      photo: null,
     },
-    fileSize: 0,
-    errors: {
-      photo: '',
-    },
-    fileUrl: null,
+    redirectToProfile: false,
   });
   const {
     buttonText,
     categories,
-    formData,
-    errors,
+    productDetails: { formData },
     productDetails,
-    fileSize,
-    fileUrl,
+    redirectToProfile,
   } = values;
 
   const init = (productId, callback) => {
@@ -188,47 +176,6 @@ const UpdateProduct = (props) => {
     );
   };
 
-  const CustomImageField = ({ onChange, ...props }) => {
-    const [field] = useField(props);
-    return (
-      <Fragment>
-        <input
-          {...field}
-          accept='image/*'
-          name='photo'
-          className={classes.input}
-          id='contained-button-file'
-          type='file'
-          onChange={onChange}
-        />
-        <img
-          src={fileUrl ? fileUrl : DefaultProduct}
-          style={{
-            width: '10rem',
-            height: '10rem',
-            padding: '.2rem',
-            marginLeft: '.6rem',
-            marginBottom: '.5rem',
-            border: '1px solid #444',
-            objectFit: 'cover',
-            objectPosition: '50% 50%',
-          }}
-        />
-        <label htmlFor='contained-button-file'>
-          <Button
-            variant='contained'
-            color='primary'
-            className={classes.uploadButton}
-            startIcon={<CloudUploadIcon />}
-            component='span'
-          >
-            Upload Product Image
-          </Button>
-        </label>
-      </Fragment>
-    );
-  };
-
   const CustomField = ({
     rows,
     multiline,
@@ -260,20 +207,6 @@ const UpdateProduct = (props) => {
     );
   };
 
-  const handleImage = (e) => {
-    const fileSize = e.target.files[0].size || 0;
-    errors.photo =
-      fileSize > 100000 ? 'File size should be less than 100KB' : '';
-    setValues({
-      ...values,
-      // [e.target.name]: e.target.files[0],
-      fileUrl: URL.createObjectURL(e.target.files[0]),
-      errors,
-      fileSize,
-    });
-    formData.set(e.target.name, e.target.files[0]);
-  };
-
   const handleReset = (resetForm) => {
     if (window.confirm('Reset form?')) {
       setValues({
@@ -285,6 +218,7 @@ const UpdateProduct = (props) => {
           category: '',
           shipping: '',
           quantity: 0,
+          photo: null,
           formData: new FormData(),
         },
       });
@@ -292,7 +226,26 @@ const UpdateProduct = (props) => {
     }
   };
 
-  const newProductForm = () => (
+  const deleteSingleProduct = () => {
+    deleteProduct(props.match.params.productId, user._id, token).then(
+      (response) => {
+        if (response.error)
+          toast.error(`${response.error}`, {
+            position: toast.POSITION.BOTTOM_LEFT,
+          });
+        else {
+          setValues({ ...values, redirectToProfile: true });
+          toast.success('Product deleted successfully', {
+            position: toast.POSITION.BOTTOM_LEFT,
+          });
+        }
+      }
+    );
+  };
+  const redirectUser = () => {
+    if (redirectToProfile) return <Redirect to='/' />;
+  };
+  const updateProductForm = () => (
     <Formik
       enableReinitialize={true}
       initialValues={{
@@ -307,27 +260,45 @@ const UpdateProduct = (props) => {
               ? 1
               : 0
             : '',
+        photo: null,
       }}
       validationSchema={validationSchema}
       onSubmit={(data, { setSubmitting, resetForm }) => {
         setSubmitting(true);
-        console.log('TESTING CUSTOM SELECT FIELD: ', data);
-        resetForm();
+        setValues({ ...values, buttonText: 'Updating...' });
+        for (let prop in data) formData.set(prop, data[prop]);
+        updateProduct(
+          props.match.params.productId,
+          user._id,
+          token,
+          formData
+        ).then((response) => {
+          if (response.error)
+            toast.error(`${response.error}`, {
+              position: toast.POSITION.BOTTOM_LEFT,
+            });
+          else {
+            handleReset.bind(null, resetForm);
+            toast.success('Product updated', {
+              position: toast.POSITION.BOTTOM_LEFT,
+            });
+          }
+          setValues({ ...values, buttonText: 'Update' });
+        });
         setSubmitting(false);
       }}
     >
-      {({ isSubmitting, resetForm }) => (
+      {({ isSubmitting, resetForm, setFieldValue, errors }) => (
         <Grid item xs style={{ maxWidth: '65rem', margin: '0 auto' }}>
           <Form>
-            <Field name='photo' onChange={handleImage} as={CustomImageField} />
-            {errors.photo.length > 0 && (
-              <Fragment>
-                <br />
-                <span style={{ marginLeft: '0.6rem' }} className='text-danger'>
+            <div style={{ margin: '0 auto 1rem auto' }}>
+              <ImageHandler setFieldValue={setFieldValue} maxSize={100000} />
+              {errors.photo && errors.photo.length > 0 && (
+                <span className='text-danger' style={{ marginLeft: '.6rem' }}>
                   {errors.photo}
                 </span>
-              </Fragment>
-            )}
+              )}
+            </div>
             <Field
               name='name'
               type='text'
@@ -403,14 +374,6 @@ const UpdateProduct = (props) => {
               }}
             >
               <Button
-                variant='outlined'
-                color='secondary'
-                onClick={handleReset.bind(null, resetForm)}
-                style={{ marginRight: '.9rem' }}
-              >
-                Reset form
-              </Button>
-              <Button
                 disabled={isSubmitting}
                 variant='contained'
                 color='secondary'
@@ -421,6 +384,24 @@ const UpdateProduct = (props) => {
               >
                 Back to Dashboard
               </Button>
+              <Button
+                variant='outlined'
+                color='secondary'
+                onClick={handleReset.bind(null, resetForm)}
+                style={{ marginRight: '.9rem' }}
+              >
+                Reset form
+              </Button>
+              <IconButton
+                aria-label='delete'
+                className={classes.iconButtonStyle}
+                onClick={() => {
+                  if (window.confirm('Delete this product from Database?'))
+                    deleteSingleProduct();
+                }}
+              >
+                <DeleteIcon />
+              </IconButton>
               <Button
                 disabled={isSubmitting}
                 type='submit'
@@ -448,7 +429,8 @@ const UpdateProduct = (props) => {
         justify='center'
         style={{ marginBottom: '7rem', padding: '.5rem' }}
       >
-        {newProductForm()}
+        {redirectUser()}
+        {updateProductForm()}
       </Grid>
     </Layout>
   );
