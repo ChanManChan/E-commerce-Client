@@ -112,9 +112,7 @@ const AddProduct = () => {
     shipping,
     errors,
     fileSize,
-    createdProduct,
     fileUrl,
-    redirectToProfile,
   } = values;
 
   // Load categories and set form data
