@@ -72,6 +72,15 @@ const Signin = () => {
     );
   };
 
+  const informParent = (response) => {
+    authenticate(response, () => {
+      toast.success(`Welcome ${response.user.name}`, {
+        position: toast.POSITION.BOTTOM_LEFT,
+      });
+      setValues({ ...values, redirectToReferrer: true, buttonText: 'Submit' });
+    });
+  };
+
   const signInForm = () => (
     <Formik
       initialValues={{ email: '', password: '' }}
@@ -150,7 +159,7 @@ const Signin = () => {
       className='container col-md-6'
     >
       {redirectUser()}
-      <GoogleLogin />
+      <GoogleLogin informParent={informParent} />
       <div style={styling()}>{signInForm()}</div>
     </Layout>
   );

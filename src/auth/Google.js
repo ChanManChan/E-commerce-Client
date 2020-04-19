@@ -11,7 +11,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const Google = () => {
+const Google = ({ informParent = (f) => f }) => {
   const classes = useStyles();
   const responseGoogle = (response) => {
     // We are sending only the 'tokenId' from 'response' object to our backend, and another package in our backend will take this token, and based on this token it will make request to 'Google' and make sure that we have the valid user (the same 'REACT_APP_GOOGLE_CLIENT_ID' we are going to use in our backend as well )
@@ -28,7 +28,7 @@ const Google = () => {
       })
       .then((result) => {
         // Inform parent (Signin.js)
-
+        informParent(result);
         console.log('GOOGLE SIGNIN SUCCESS>>>', result);
       })
       .catch((err) => console.log('GOOGLE SIGNIN ERROR>>>', err));
