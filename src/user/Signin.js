@@ -12,7 +12,7 @@ import { green } from '@material-ui/core/colors';
 import * as yup from 'yup';
 import { toast } from 'react-toastify';
 import { signin, authenticate, isAuthenticated } from '../auth';
-import { Redirect } from 'react-router-dom';
+import { Redirect, Link } from 'react-router-dom';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import GoogleLogin from '../auth/Google';
 import FacebookLogin from '../auth/Facebook';
@@ -128,20 +128,38 @@ const Signin = () => {
             placeholder='Password'
             label='Password'
           />
-          <Button
-            disabled={isSubmitting}
-            type='submit'
-            variant='contained'
-            color='primary'
-            size='large'
-            style={{ float: 'right' }}
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'flex-end',
+              marginRight: '-.6rem',
+            }}
           >
-            {buttonText}
-          </Button>
+            <Button
+              variant='outlined'
+              color='secondary'
+              component={Link}
+              size='large'
+              style={{ marginRight: '.6rem' }}
+              to='/auth/password/forgot'
+            >
+              Forgot Password
+            </Button>
+            <Button
+              disabled={isSubmitting}
+              type='submit'
+              variant='contained'
+              color='primary'
+              size='large'
+            >
+              {buttonText}
+            </Button>
+          </div>
         </Form>
       )}
     </Formik>
   );
+
   const redirectUser = () => {
     if (redirectToReferrer) {
       if (user && user.role === 1) return <Redirect to='/admin/dashboard' />;

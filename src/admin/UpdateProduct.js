@@ -30,21 +30,8 @@ import DeleteIcon from '@material-ui/icons/Delete';
 import IconButton from '@material-ui/core/IconButton';
 
 const useStyles = makeStyles((theme) => ({
-  root: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    '& > *': {
-      margin: theme.spacing(1),
-    },
-  },
   margin: {
     margin: theme.spacing(1),
-  },
-  input: {
-    display: 'none',
-  },
-  uploadButton: {
-    marginLeft: '.6rem',
   },
   formControl: {
     margin: theme.spacing(1),

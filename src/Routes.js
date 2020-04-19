@@ -16,12 +16,20 @@ import Cart from './core/Cart';
 import Orders from './admin/Orders';
 import Profile from './user/Profile';
 import ManageProducts from './admin/ManageProducts';
+import ForgotPassword from './auth/ForgotPassword';
+import ResetPassword from './auth/ResetPassword';
 
 const Routes = () => {
   return (
     <BrowserRouter>
       <Switch>
         <Route exact path='/' component={Home} />
+        <Route exact path='/auth/password/forgot' component={ForgotPassword} />
+        <Route
+          exact
+          path='/auth/password/reset/:token'
+          component={ResetPassword}
+        />
         <Route exact path='/product/:productId' component={Product} />
         <Route exact path='/signin' component={Signin} />
         <Route exact path='/signup' component={Signup} />
