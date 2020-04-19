@@ -14,6 +14,7 @@ import { toast } from 'react-toastify';
 import { signin, authenticate, isAuthenticated } from '../auth';
 import { Redirect } from 'react-router-dom';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
+import GoogleLogin from '../auth/Google';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -149,6 +150,7 @@ const Signin = () => {
       className='container col-md-6'
     >
       {redirectUser()}
+      <GoogleLogin />
       <div style={styling()}>{signInForm()}</div>
     </Layout>
   );
