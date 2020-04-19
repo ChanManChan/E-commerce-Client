@@ -15,6 +15,7 @@ import { signin, authenticate, isAuthenticated } from '../auth';
 import { Redirect } from 'react-router-dom';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import GoogleLogin from '../auth/Google';
+import FacebookLogin from '../auth/Facebook';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -160,6 +161,7 @@ const Signin = () => {
     >
       {redirectUser()}
       <GoogleLogin informParent={informParent} />
+      <FacebookLogin informParent={informParent} />
       <div style={styling()}>{signInForm()}</div>
     </Layout>
   );
